@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class FSM
 {
-    private int stateCount = 0;
+    private const int UNNASSIGNED_TRASNSITION = -1;
     public int currentState = 0;
     private Dictionary<int, State> behaviours;
     private Dictionary<int, Func<object[]>> behaviourOnTickParameters;
@@ -64,6 +64,10 @@ public class FSM
     public void SetTransition(int originState, int flag, int destinationState)
     {
         transitions[originState, flag] = destinationState;
+    }
+    public void ForceState(int state)
+    {
+        currentState = state;
     }
 
     public void Tick()
