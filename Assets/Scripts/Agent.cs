@@ -39,4 +39,8 @@ public class Agent : MonoBehaviour
         fsm.ForceState((int)Behaviour.Patrol);
     }
 
+    private void Update()
+    {
+        fsm.Tick();
+    }
 }

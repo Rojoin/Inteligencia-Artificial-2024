@@ -58,6 +58,7 @@ public class FSM
             behaviourOnEnterParameters.Add(stateIndex, onEnterParametes);
             behaviourOnTickParameters.Add(stateIndex, onTickParametes);
             behaviourOnExitParameters.Add(stateIndex, onExitParametes);
+            newBehaviour.OnFlag += Transition;
         }
     }
 
@@ -75,7 +76,7 @@ public class FSM
         if (behaviours.ContainsKey(currentState))
         {
             foreach (Action behaviour in behaviours[currentState]
-                         .GetEnterBehaviours(behaviourOnEnterParameters[currentState]?.Invoke()))
+                         .GetTickBehaviours(behaviourOnTickParameters[currentState]?.Invoke()))
             {
                 behaviour?.Invoke();
             }
