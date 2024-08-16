@@ -1,79 +1,121 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using UnityEngine;
 
 
+public struct BehaviourActions
+{
+    public Dictionary<int, List<Action>> mainThreadBehaviours;
+    public ConcurrentDictionary<int, ConcurrentBag<Action>> multithreadBehaviours;
+    public Action transitionBehaviour;
+
+    public void AddMainThreadBehaviour(int executionOrder, Action behaviour)
+    {
+        if (mainThreadBehaviours == null)
+        {
+            mainThreadBehaviours = new Dictionary<int, List<Action>>();
+        }
+
+        if (!mainThreadBehaviours.ContainsKey(executionOrder))
+        {
+            mainThreadBehaviours.Add(executionOrder, new List<Action>());
+        }
+
+        mainThreadBehaviours[executionOrder].Add(behaviour);
+    }
+
+    public void AddMultiThreadBehaviour(int executionOrder, Action behaviour)
+    {
+        if (multithreadBehaviours == null)
+        {
+            multithreadBehaviours = new ConcurrentDictionary<int, ConcurrentBag<Action>>();
+        }
+
+        if (!multithreadBehaviours.ContainsKey(executionOrder))
+        {
+            multithreadBehaviours.TryAdd(executionOrder, new ConcurrentBag<Action>());
+        }
+
+        multithreadBehaviours[executionOrder].Add(behaviour);
+    }
+
+    public void SetTransitionBehavior(Action transitionBehaviour)
+    {
+        this.transitionBehaviour = transitionBehaviour;
+    }
+}
+
 public abstract class State
 {
-    public Action<int> OnFlag;
-    public abstract List<Action> GetTickBehaviours(params object[] parameters);
-    public abstract List<Action> GetEnterBehaviours(params object[] parameters);
-    public abstract List<Action> GetExitBehaviours(params object[] parameters);
+    public Action<Enum> OnFlag;
+    public abstract BehaviourActions GetTickBehaviours(params object[] parameters);
+    public abstract BehaviourActions GetEnterBehaviours(params object[] parameters);
+    public abstract BehaviourActions GetExitBehaviours(params object[] parameters);
 }
 
 public sealed class ChaseState : State
 {
-    public override List<Action> GetTickBehaviours(params object[] parameters)
+    public override BehaviourActions GetTickBehaviours(params object[] parameters)
     {
         Transform OwnerTransform = parameters[0] as Transform;
         Transform targetTransform = parameters[1] as Transform;
         float speed = Convert.ToSingle(parameters[2]);
         float explodeDistance = Convert.ToSingle(parameters[3]);
         float lostDistance = Convert.ToSingle(parameters[4]);
-        List<Action> behaviours = new List<Action>();
-        behaviours.Add((() =>
+        BehaviourActions behaviour = new BehaviourActions();
+        behaviour.AddMainThreadBehaviour(0, (() =>
         {
             OwnerTransform.position +=
                 (targetTransform.position - OwnerTransform.position).normalized * speed * Time.deltaTime;
         }));
-        behaviours.Add((() =>
+        behaviour.AddMultiThreadBehaviour(0, (() => { Debug.Log("Whistle"); }));
+        behaviour.SetTransitionBehavior(() =>
         {
-            Debug.Log("Whistle");
-        }));
-        behaviours.Add((() =>
-        {
-            if (Vector3.Distance(targetTransform.position,OwnerTransform.position)<explodeDistance)
+            if (Vector3.Distance(targetTransform.position, OwnerTransform.position) < explodeDistance)
             {
-                OnFlag?.Invoke((int)Flags.OnTargetReach);
+                OnFlag?.Invoke(Flags.OnTargetReach);
             }
-            else if (Vector3.Distance(targetTransform.position,OwnerTransform.position)>lostDistance)
+            else if (Vector3.Distance(targetTransform.position, OwnerTransform.position) > lostDistance)
             {
-                OnFlag?.Invoke((int)Flags.OnTargetLost);
+                OnFlag?.Invoke(Flags.OnTargetLost);
             }
-        }));
-        return new List<Action>();
+        });
+        return behaviour;
     }
 
-    public override List<Action> GetEnterBehaviours(params object[] parameters)
+    public override BehaviourActions GetEnterBehaviours(params object[] parameters)
     {
-        return new List<Action>();
+        return default;
     }
 
-    public override List<Action> GetExitBehaviours(params object[] parameters)
+    public override BehaviourActions GetExitBehaviours(params object[] parameters)
     {
-        return new List<Action>();
+        return default;
     }
 }
 
 public sealed class ExplodeState : State
 {
-    public override List<Action> GetTickBehaviours(params object[] parameters)
+    public override BehaviourActions GetTickBehaviours(params object[] parameters)
     {
-        List<Action> behaviours = new List<Action>();
-        behaviours.Add((() => Debug.Log("F")));
-        return behaviours;
+        BehaviourActions behaviour = new BehaviourActions();
+
+        behaviour.AddMultiThreadBehaviour(0, () => Debug.Log("F"));
+        return behaviour;
     }
 
-    public override List<Action> GetEnterBehaviours(params object[] parameters)
+    public override BehaviourActions GetEnterBehaviours(params object[] parameters)
     {
-        List<Action> behaviours = new List<Action>();
-        behaviours.Add((() => Debug.Log("Cagaste Light")));
-        return behaviours;
+        BehaviourActions behaviour = new BehaviourActions();
+
+        behaviour.AddMultiThreadBehaviour(0, () => Debug.Log("Cagaste Light"));
+        return behaviour;
     }
 
-    public override List<Action> GetExitBehaviours(params object[] parameters)
+    public override BehaviourActions GetExitBehaviours(params object[] parameters)
     {
-        return new List<Action>();
+        return default;
     }
 }
 
@@ -81,16 +123,19 @@ public sealed class PatrolState : State
 {
     private Transform actualTarget;
 
-    public override List<Action> GetTickBehaviours(params object[] parameters)
+    public override BehaviourActions GetTickBehaviours(params object[] parameters)
     {
         Transform OwnerTransform = parameters[0] as Transform;
         Transform wayPoint1 = parameters[1] as Transform;
         Transform wayPoint2 = parameters[2] as Transform;
-        Transform chaseTarget = parameters[4] as Transform;
-        float speed = Convert.ToSingle(parameters[5]);
-        float chaseDistance = Convert.ToSingle(parameters[6]);
-        List<Action> behaviours = new List<Action>();
-        behaviours.Add((() =>
+        Transform chaseTarget = parameters[3] as Transform;
+        float speed = Convert.ToSingle(parameters[4]);
+        float chaseDistance = Convert.ToSingle(parameters[5]);
+        BehaviourActions behaviour = new BehaviourActions();
+
+        behaviour.AddMultiThreadBehaviour(0, () => Debug.Log("F"));
+     
+        behaviour.AddMultiThreadBehaviour(0, (() =>
         {
             if (actualTarget == null)
             {
@@ -104,27 +149,30 @@ public sealed class PatrolState : State
                 else if (actualTarget == wayPoint2)
                     actualTarget = wayPoint1;
             }
-
-            OwnerTransform.position +=
-                (actualTarget.position - OwnerTransform.position).normalized * speed * Time.deltaTime;
         }));
-        behaviours.Add(() =>
+        behaviour.AddMainThreadBehaviour(1, () =>
+            {
+                OwnerTransform.position +=
+                    (actualTarget.position - OwnerTransform.position).normalized * speed * Time.deltaTime;
+            }
+        );
+        behaviour.SetTransitionBehavior(() =>
         {
             if (Vector3.Distance(OwnerTransform.position, chaseTarget.position) < chaseDistance)
             {
-                OnFlag?.Invoke((int)Flags.OnTargetNear);
+                OnFlag?.Invoke(Flags.OnTargetNear);
             }
         });
-        return behaviours;
+        return behaviour;
     }
 
-    public override List<Action> GetEnterBehaviours(params object[] parameters)
+    public override BehaviourActions GetEnterBehaviours(params object[] parameters)
     {
-        return new List<Action>();
+        return default;
     }
 
-    public override List<Action> GetExitBehaviours(params object[] parameters)
+    public override BehaviourActions GetExitBehaviours(params object[] parameters)
     {
-        return new List<Action>();
+        return default;
     }
 }

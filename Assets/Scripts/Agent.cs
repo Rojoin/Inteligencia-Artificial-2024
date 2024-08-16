@@ -1,4 +1,5 @@
 ﻿using System;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public enum Behaviour
@@ -17,9 +18,9 @@ public enum Flags
 
 public class Agent : MonoBehaviour
 {
-    private FSM fsm;
-    Transform[] waypoints;
-    Transform chaseTarget;
+    private FSM<Behaviour,Flags> fsm;
+    public Transform[] waypoints;
+    public Transform chaseTarget;
     [SerializeField] private float speed;
     [SerializeField] private float chaseDistance = 0.2f;
     [SerializeField] private float explodeDistance;
@@ -28,19 +29,32 @@ public class Agent : MonoBehaviour
     void Start()
     {
         int stateCount = 0;
-        fsm = new FSM(Enum.GetValues(typeof(Behaviour)).Length, Enum.GetValues(typeof(Flags)).Length);
-        fsm.AddBehaviour<PatrolState>((int)Behaviour.Patrol,onTickParametes: () => new object[] {this.transform,waypoints[0],waypoints[1],chaseTarget, speed,chaseDistance});
-        fsm.AddBehaviour<ChaseState>((int)Behaviour.Chase,onTickParametes: () => new object[] {this.transform,chaseTarget, speed,explodeDistance,lostDistance});
-        fsm.AddBehaviour<ExplodeState>((int)Behaviour.Explode);
+        fsm = new FSM<Behaviour,Flags>();
+        fsm.AddBehaviour<PatrolState>(Behaviour.Patrol,onTickParametes: () => new object[] {this.transform,waypoints[0],waypoints[1],chaseTarget, speed,chaseDistance});
+        fsm.AddBehaviour<ChaseState>(Behaviour.Chase,onTickParametes: () => new object[] {this.transform,chaseTarget, speed,explodeDistance,lostDistance});
+        fsm.AddBehaviour<ExplodeState>(Behaviour.Explode);
         
-        fsm.SetTransition((int)Behaviour.Patrol,(int)Flags.OnTargetNear,(int)Behaviour.Chase);
-        fsm.SetTransition((int)Behaviour.Chase,(int)Flags.OnTargetReach,(int)Behaviour.Explode);
-        fsm.SetTransition((int)Behaviour.Chase,(int)Flags.OnTargetLost,(int)Behaviour.Patrol);
-        fsm.ForceState((int)Behaviour.Patrol);
+        fsm.SetTransition(Behaviour.Patrol,Flags.OnTargetNear,Behaviour.Chase);
+        fsm.SetTransition(Behaviour.Chase,Flags.OnTargetReach,Behaviour.Explode);
+        fsm.SetTransition(Behaviour.Chase,Flags.OnTargetLost,Behaviour.Patrol);
+        fsm.ForceState(Behaviour.Patrol);
     }
 
     private void Update()
     {
         fsm.Tick();
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (Application.isPlaying)
+        {
+           Gizmos.color = Color.green;
+           Gizmos.DrawWireSphere(transform.position,chaseDistance);
+           Gizmos.color = Color.blue;
+           Gizmos.DrawWireSphere(transform.position,lostDistance);
+           Gizmos.color = Color.red;
+           Gizmos.DrawWireSphere(transform.position,explodeDistance);
+        }
     }
 }
