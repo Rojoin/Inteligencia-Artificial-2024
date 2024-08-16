@@ -133,7 +133,7 @@ public sealed class PatrolState : State
         float chaseDistance = Convert.ToSingle(parameters[5]);
         BehaviourActions behaviour = new BehaviourActions();
 
-        behaviour.AddMultiThreadBehaviour(0, () => Debug.Log("F"));
+        behaviour.AddMultiThreadBehaviour(0, () => Debug.Log("Patrolling"));
 
         Vector3 ownerTransformPosition = OwnerTransform.position;
         Vector3 actualTargetPosition = chaseTarget.position;
