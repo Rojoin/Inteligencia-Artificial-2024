@@ -10,7 +10,7 @@ public class FSM<EnumState, EnumFlag> where EnumState : Enum where EnumFlag : En
     private Dictionary<int, Func<object[]>> behaviourOnTickParameters;
     private Dictionary<int, Func<object[]>> behaviourOnEnterParameters;
     private Dictionary<int, Func<object[]>> behaviourOnExitParameters;
-    private int[,] transitions;
+    private (int destinationState, Action onTransitions)[,] transitions;
 
     private ParallelOptions parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 32 };
 
@@ -28,13 +28,13 @@ public class FSM<EnumState, EnumFlag> where EnumState : Enum where EnumFlag : En
         int states = Enum.GetValues(typeof(EnumState)).Length;
         int flags = Enum.GetValues(typeof(EnumFlag)).Length;
         behaviours = new Dictionary<int, State>();
-        transitions = new int[states, flags];
+        transitions = new (int destinationState, Action onTransitions)[states, flags];
 
         for (int i = 0; i < states; i++)
         {
             for (int j = 0; j < flags; j++)
             {
-                transitions[i, j] = UNNASSIGNED_TRASNSITION;
+                transitions[i, j] = (UNNASSIGNED_TRASNSITION, null);
             }
         }
 
@@ -45,11 +45,11 @@ public class FSM<EnumState, EnumFlag> where EnumState : Enum where EnumFlag : En
 
     private void Transition(Enum flag)
     {
-        if (transitions[currentState, Convert.ToInt32(flag)] != UNNASSIGNED_TRASNSITION)
+        if (transitions[currentState, Convert.ToInt32(flag)].destinationState != UNNASSIGNED_TRASNSITION)
         {
             ExecuteBehaviour(GetCurrentStateOnEnterBehaviours);
-
-            currentState = transitions[currentState, Convert.ToInt32(flag)];
+            transitions[currentState, Convert.ToInt32(flag)].onTransitions?.Invoke();
+            currentState = transitions[currentState, Convert.ToInt32(flag)].destinationState;
             ExecuteBehaviour(GetCurrentStateOnExitBehaviours);
         }
     }
@@ -70,9 +70,11 @@ public class FSM<EnumState, EnumFlag> where EnumState : Enum where EnumFlag : En
         }
     }
 
-    public void SetTransition(EnumState originState, EnumFlag flag, EnumState destinationState)
+    public void SetTransition(EnumState originState, EnumFlag flag, EnumState destinationState,
+        Action onTransitions = null)
     {
-        transitions[Convert.ToInt32(originState), Convert.ToInt32(flag)] = Convert.ToInt32(destinationState);
+        transitions[Convert.ToInt32(originState), Convert.ToInt32(flag)] =
+            (Convert.ToInt32(destinationState), onTransitions);
     }
 
     public void ForceState(EnumState state)
@@ -97,23 +99,24 @@ public class FSM<EnumState, EnumFlag> where EnumState : Enum where EnumFlag : En
 
         int executionOrder = 0;
 
-        while (behaviourAction.mainThreadBehaviours.Count > 0 || behaviourAction.multithreadBehaviours.Count > 0)
+
+        while ((behaviourAction.mainThreadBehaviours != null && behaviourAction.mainThreadBehaviours.Count > 0) ||
+               (behaviourAction.multithreadBehaviours != null && behaviourAction.multithreadBehaviours.Count > 0))
         {
             Task multithreadableBehaviours = new Task(() =>
             {
-                if (behaviourAction.multithreadBehaviours.ContainsKey(executionOrder))
+                if (behaviourAction.multithreadBehaviours != null &&
+                    behaviourAction.multithreadBehaviours.ContainsKey(executionOrder))
                 {
                     Parallel.ForEach(behaviourAction.multithreadBehaviours[executionOrder], parallelOptions,
-                        (behaviour) =>
-                        {
-                            behaviour?.Invoke();
-                        });
+                        (behaviour) => { behaviour?.Invoke(); });
                     behaviourAction.multithreadBehaviours.TryRemove(executionOrder, out _);
                 }
             });
             multithreadableBehaviours.Start();
 
-            if (behaviourAction.mainThreadBehaviours.ContainsKey(executionOrder))
+            if (behaviourAction.mainThreadBehaviours != null &&
+                behaviourAction.mainThreadBehaviours.ContainsKey(executionOrder))
             {
                 foreach (Action behaviour in behaviourAction.mainThreadBehaviours[executionOrder])
                 {
@@ -122,9 +125,11 @@ public class FSM<EnumState, EnumFlag> where EnumState : Enum where EnumFlag : En
 
                 behaviourAction.mainThreadBehaviours.Remove(executionOrder);
             }
+
             multithreadableBehaviours.Wait();
             executionOrder++;
         }
+
         behaviourAction.transitionBehaviour?.Invoke();
     }
 }

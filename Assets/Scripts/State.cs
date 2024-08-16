@@ -134,7 +134,9 @@ public sealed class PatrolState : State
         BehaviourActions behaviour = new BehaviourActions();
 
         behaviour.AddMultiThreadBehaviour(0, () => Debug.Log("F"));
-     
+
+        Vector3 ownerTransformPosition = OwnerTransform.position;
+        Vector3 actualTargetPosition = chaseTarget.position;
         behaviour.AddMultiThreadBehaviour(0, (() =>
         {
             if (actualTarget == null)
@@ -142,7 +144,7 @@ public sealed class PatrolState : State
                 actualTarget = wayPoint1;
             }
 
-            if (Vector3.Distance(OwnerTransform.position, actualTarget.position) < 0.2f)
+            if (Vector3.Distance(ownerTransformPosition, actualTargetPosition) < 0.2f)
             {
                 if (actualTarget == wayPoint1)
                     actualTarget = wayPoint2;
@@ -153,12 +155,12 @@ public sealed class PatrolState : State
         behaviour.AddMainThreadBehaviour(1, () =>
             {
                 OwnerTransform.position +=
-                    (actualTarget.position - OwnerTransform.position).normalized * speed * Time.deltaTime;
+                    (actualTargetPosition - ownerTransformPosition).normalized * speed * Time.deltaTime;
             }
         );
         behaviour.SetTransitionBehavior(() =>
         {
-            if (Vector3.Distance(OwnerTransform.position, chaseTarget.position) < chaseDistance)
+            if (Vector3.Distance(ownerTransformPosition, chaseTarget.position) < chaseDistance)
             {
                 OnFlag?.Invoke(Flags.OnTargetNear);
             }
