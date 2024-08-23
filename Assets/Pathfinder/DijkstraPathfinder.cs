@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-public class DijstraPathfinder<NodeType> : Pathfinder<NodeType> where NodeType : INode
+public class DijkstraPathfinder<NodeType> : Pathfinder<NodeType> where NodeType : INode
 {
     protected override int Distance(NodeType A, NodeType B)
     {

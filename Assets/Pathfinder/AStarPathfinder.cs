@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 public class AStarPathfinder<NodeType> : Pathfinder<NodeType> where NodeType : INode
 {
@@ -9,12 +10,13 @@ public class AStarPathfinder<NodeType> : Pathfinder<NodeType> where NodeType : I
 
     protected override ICollection<NodeType> GetNeighbors(NodeType node)
     {
+        
         throw new System.NotImplementedException();
     }
 
     protected override bool IsBloqued(NodeType node)
     {
-        throw new System.NotImplementedException();
+        return node.IsBloqued();
     }
 
     protected override int MoveToNeighborCost(NodeType A, NodeType b)
@@ -24,6 +26,6 @@ public class AStarPathfinder<NodeType> : Pathfinder<NodeType> where NodeType : I
 
     protected override bool NodesEquals(NodeType A, NodeType B)
     {
-        throw new System.NotImplementedException();
+        return A.Equals(B);
     }
 }
