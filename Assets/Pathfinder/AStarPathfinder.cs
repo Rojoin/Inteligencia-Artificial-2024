@@ -8,7 +8,7 @@ public class AStarPathfinder<NodeType> : Pathfinder<NodeType> where NodeType : I
         throw new System.NotImplementedException();
     }
 
-    protected override ICollection<NodeType> GetNeighbors(NodeType node)
+    protected override TransitionToNode[] GetNeighbors(NodeType node)
     {
         
         throw new System.NotImplementedException();

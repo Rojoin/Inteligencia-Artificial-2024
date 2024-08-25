@@ -1,10 +1,15 @@
-﻿public class TransitionToNode<Node> where Node : INode
-{
-    protected Node destination;
+﻿using System;
+using UnityEngine;
 
-    public TransitionToNode(Node destination)
+[Serializable]
+public class TransitionToNode
+{
+    [SerializeField] protected int destinationID;
+
+    public TransitionToNode(int destination)
     {
-        this.destination = destination;
+        this.destinationID = destination;
     }
-    public Node GetDestination() => destination;
+
+    public int GetDestination() => destinationID;
 }

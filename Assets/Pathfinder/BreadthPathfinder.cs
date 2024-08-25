@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 public class BreadthPathfinder<NodeType> : Pathfinder<NodeType> where NodeType : INode
 {
@@ -7,9 +8,10 @@ public class BreadthPathfinder<NodeType> : Pathfinder<NodeType> where NodeType :
         throw new System.NotImplementedException();
     }
 
-    protected override ICollection<NodeType> GetNeighbors(NodeType node)
+    protected override TransitionToNode[] GetNeighbors(NodeType node)
     {
-        return node.GetNeighbors() as ICollection<NodeType>;
+        return node.GetNeighbors();
+    
     }
 
     protected override bool IsBloqued(NodeType node)

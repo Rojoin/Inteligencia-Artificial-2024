@@ -1,8 +1,8 @@
-﻿public class TransitionWeighted<Node> : TransitionDistance<Node>where Node : INode
+﻿public class TransitionWeighted : TransitionDistance
 {
     protected float accumulativeWeight;
 
-    public TransitionWeighted(Node destination, float heuristics, float accumulativeWeight) : base(destination, heuristics)
+    public TransitionWeighted(int destination, float heuristics, float accumulativeWeight) : base(destination, heuristics)
     {
         this.accumulativeWeight = accumulativeWeight;
     }

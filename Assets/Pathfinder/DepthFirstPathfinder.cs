@@ -8,9 +8,9 @@ public class DepthFirstPathfinder<NodeType> : Pathfinder<NodeType> where NodeTyp
         return 0;
     }
 
-    protected override ICollection<NodeType> GetNeighbors(NodeType node)
+    protected override TransitionToNode[] GetNeighbors(NodeType node)
     {
-        return node.GetNeighbors() as ICollection<NodeType>;
+        return node.GetNeighbors();
     }
 
     protected override bool IsBloqued(NodeType node)
@@ -25,6 +25,6 @@ public class DepthFirstPathfinder<NodeType> : Pathfinder<NodeType> where NodeTyp
 
     protected override bool NodesEquals(NodeType A, NodeType B)
     {
-       return Equals(A, B);
+        return A.IsEqual(B);
     }
 }

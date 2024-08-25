@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 public abstract class Pathfinder<NodeType> where NodeType : INode
 {
@@ -12,11 +14,12 @@ public abstract class Pathfinder<NodeType> where NodeType : INode
             nodes.Add(node, (default, 0, 0));
         }
 
+
         List<NodeType> openList = new List<NodeType>();
-        List<NodeType> closedList = new List<NodeType>();
-
         openList.Add(startNode);
-
+  
+        
+        List<NodeType> closedList = new List<NodeType>();
         while (openList.Count > 0)
         {
             NodeType currentNode = openList[0];
@@ -34,14 +37,16 @@ public abstract class Pathfinder<NodeType> where NodeType : INode
 
             openList.RemoveAt(currentIndex);
             closedList.Add(currentNode);
-
+            
             if (NodesEquals(currentNode, destinationNode))
             {
                 return GeneratePath(startNode, destinationNode);
             }
 
-            foreach (NodeType neighbor in GetNeighbors(currentNode))
+            foreach (TransitionToNode tNeighbour in GetNeighbors(currentNode))
             {
+
+                NodeType neighbor = graph.ToArray()[tNeighbour.GetDestination()];
                 if (!nodes.ContainsKey(neighbor) ||
                 IsBloqued(neighbor) ||
                 closedList.Contains(neighbor))
@@ -83,7 +88,7 @@ public abstract class Pathfinder<NodeType> where NodeType : INode
         }
     }
 
-    protected abstract ICollection<NodeType> GetNeighbors(NodeType node);
+    protected abstract TransitionToNode[] GetNeighbors(NodeType node);
 
     protected abstract int Distance(NodeType A, NodeType B);
 

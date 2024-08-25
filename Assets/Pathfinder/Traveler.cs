@@ -17,11 +17,18 @@ public class Traveler : MonoBehaviour
     void Start()
     {
         startNode = new Node<Vector2Int>();
-        startNode.SetCoordinate(new Vector2Int(Random.Range(0, 10), Random.Range(0, 10)));
-
+        // startNode.SetCoordinate(new Vector2Int(Random.Range(0, grapfView.nodesX), Random.Range(0, grapfView.nodesY)));
+        //
+        // startNode.SetNeighbor(new TransitionToNode(Random.Range(0,grapfView.nodesX*grapfView.nodesY)));
         destinationNode = new Node<Vector2Int>();
-        destinationNode.SetCoordinate(new Vector2Int(Random.Range(0, 10), Random.Range(0, 10)));
+        // destinationNode.SetCoordinate(new Vector2Int(Random.Range(0, grapfView.nodesX), Random.Range(0, grapfView.nodesY)));
+        // destinationNode.SetNeighbor(new TransitionToNode(Random.Range(0,grapfView.nodesX*grapfView.nodesY)));
 
+        startNode = grapfView.grapf.nodes[Random.Range(0, grapfView.grapf.nodes.Count)];
+        destinationNode = grapfView.grapf.nodes[Random.Range(0, grapfView.grapf.nodes.Count)];
+        
+        // grapfView.grapf.nodes.Insert(0,startNode);
+        // grapfView.grapf.nodes.Add(destinationNode);
         List<Node<Vector2Int>> path = Pathfinder.FindPath(startNode, destinationNode, grapfView.grapf.nodes);
         StartCoroutine(Move(path));
     }

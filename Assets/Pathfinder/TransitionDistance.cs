@@ -1,8 +1,10 @@
-﻿public class TransitionDistance<Node> : TransitionToNode<Node>where Node : INode
+﻿using System;
+
+public class TransitionDistance : TransitionToNode
 {
     protected float heuristics;
 
-    public TransitionDistance(Node destination, float heuristics) : base(destination)
+    public TransitionDistance(int destination, float heuristics) : base(destination)
     {
         this.heuristics = heuristics;
     }

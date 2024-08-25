@@ -1,10 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
-public class Node<Coordinate> : INode, INode<Coordinate>
+[Serializable]
+public class Node<Coordinate> : INode, INode<Coordinate>, IEquatable<Node<Coordinate>>
+    where Coordinate : IEquatable<Coordinate>
 {
     private Coordinate coordinate;
-    private bool isBlocked;
-    private List<INode> neighbours = new List<INode>();
+    public bool isBlocked = false;
+    public int id;
+    [SerializeField] private List<TransitionToNode> neighbours = new();
 
     public void SetCoordinate(Coordinate coordinate)
     {
@@ -26,8 +31,31 @@ public class Node<Coordinate> : INode, INode<Coordinate>
         return coordinate.Equals(((Node<Coordinate>)other).GetCoordinate());
     }
 
-    public INode[] GetNeighbors()
+    public int GetID()
+    {
+        return id;
+    }
+
+    public void SetID(int id)
+    {
+        this.id = id;
+    }
+
+    public void SetNeighbor(TransitionToNode tNode)
+    {
+        if (!neighbours.Contains(tNode))
+        {
+            neighbours.Add(tNode);
+        }
+    }
+
+    public TransitionToNode[] GetNeighbors()
     {
         return neighbours.ToArray();
+    }
+
+    public bool Equals(Node<Coordinate> other)
+    {
+        return isBlocked == other.isBlocked && coordinate.Equals(other.coordinate) && neighbours == other.neighbours;
     }
 }
