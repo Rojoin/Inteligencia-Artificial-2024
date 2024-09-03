@@ -1,16 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-public class DepthFirstPathfinder<NodeType> : Pathfinder<NodeType> where NodeType : INode
+public class DepthFirstPathfinder<NodeType,Coordinate> : Pathfinder<NodeType,Coordinate>  where NodeType : class, INode<Coordinate>
 {
     protected override int Distance(NodeType A, NodeType B)
     {
         return 0;
     }
 
-    protected override TransitionToNode[] GetNeighbors(NodeType node)
+    protected override ICollection<NodeType> GetNeighbors(NodeType node)
     {
-        return node.GetNeighbors();
+        ICollection<INode<Coordinate>> neighbors = node.GetNeighbors();
+        List<NodeType> neighborsList = new List<NodeType>();
+
+        foreach (var neighbor in neighbors)
+        {
+            neighborsList.Add(neighbor as NodeType);
+        }
+
+        return neighborsList;
     }
 
     protected override bool IsBloqued(NodeType node)

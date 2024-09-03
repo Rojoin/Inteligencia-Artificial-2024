@@ -1,13 +1,16 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public abstract class Pathfinder<NodeType> where NodeType : INode
+public abstract class Pathfinder<NodeType,Coordinate> where NodeType : INode<Coordinate>
 {
+    protected IDistance<NodeType> graph;
+    protected bool useManhattan = true;
     public List<NodeType> FindPath(NodeType startNode, NodeType destinationNode, ICollection<NodeType> graph)
     {
         Dictionary<NodeType, (NodeType Parent, int AcumulativeCost, int Heuristic)> nodes =
             new Dictionary<NodeType, (NodeType Parent, int AcumulativeCost, int Heuristic)>();
 
+        this.graph = graph as IDistance<NodeType>;
         foreach (NodeType node in graph)
         {
             nodes.Add(node, (default, 0, 0));
@@ -42,10 +45,11 @@ public abstract class Pathfinder<NodeType> where NodeType : INode
                 return GeneratePath(startNode, destinationNode);
             }
 
-            foreach (TransitionToNode tNeighbour in GetNeighbors(currentNode))
+            foreach (NodeType nodeNeighbor in GetNeighbors(currentNode))
             {
 
-                NodeType neighbor = graph.ToArray()[tNeighbour.GetDestination()];
+                NodeType neighbor = (NodeType)nodeNeighbor;
+                
                 if (!nodes.ContainsKey(neighbor) ||
                 IsBloqued(neighbor) ||
                 closedList.Contains(neighbor))
@@ -87,7 +91,7 @@ public abstract class Pathfinder<NodeType> where NodeType : INode
         }
     }
 
-    protected abstract TransitionToNode[] GetNeighbors(NodeType node);
+    protected abstract  ICollection<NodeType> GetNeighbors(NodeType node);
 
     protected abstract int Distance(NodeType A, NodeType B);
 

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-public class Node<Coordinate> : INode, INode<Coordinate>, IEquatable<Node<Coordinate>>
+public class Node<Coordinate> : INode<Coordinate>, IEquatable<Node<Coordinate>>
     where Coordinate : IEquatable<Coordinate>
 {
     private Coordinate coordinate;
+    private int weight;
     public bool isBlocked = false;
     public int id;
-    [SerializeField] private List<TransitionToNode> neighbours = new();
+    [SerializeField] private List<INode<Coordinate>>neighbours = new();
 
     public void SetCoordinate(Coordinate coordinate)
     {
@@ -36,12 +37,11 @@ public class Node<Coordinate> : INode, INode<Coordinate>, IEquatable<Node<Coordi
         return id;
     }
 
-    public void SetID(int id)
-    {
-        this.id = id;
-    }
+    public int GetWeight() => weight;
 
-    public void SetNeighbor(TransitionToNode tNode)
+    public void SetID(int id) => this.id = id;
+
+    public void SetNeighbor(INode<Coordinate> tNode)
     {
         if (!neighbours.Contains(tNode))
         {
@@ -49,9 +49,9 @@ public class Node<Coordinate> : INode, INode<Coordinate>, IEquatable<Node<Coordi
         }
     }
 
-    public TransitionToNode[] GetNeighbors()
+    public ICollection<INode<Coordinate>> GetNeighbors()
     {
-        return neighbours.ToArray();
+        return neighbours;
     }
 
     public bool Equals(Node<Coordinate> other)

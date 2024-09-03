@@ -1,22 +1,30 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 
-public class BreadthPathfinder<NodeType> : Pathfinder<NodeType> where NodeType : INode
+public class BreadthPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coordinate>
+    where NodeType : class, INode<Coordinate>
 {
     protected override int Distance(NodeType A, NodeType B)
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
-    protected override TransitionToNode[] GetNeighbors(NodeType node)
+    protected override ICollection<NodeType> GetNeighbors(NodeType node)
     {
-        return node.GetNeighbors();
-    
+        ICollection<INode<Coordinate>> neighbors = node.GetNeighbors();
+        List<NodeType> neighborsList = new List<NodeType>();
+
+        foreach (var neighbor in neighbors)
+        {
+            neighborsList.Add(neighbor as NodeType);
+        }
+
+        return neighborsList;
     }
 
     protected override bool IsBloqued(NodeType node)
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     protected override int MoveToNeighborCost(NodeType A, NodeType b)

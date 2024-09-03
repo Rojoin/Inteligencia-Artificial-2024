@@ -24,9 +24,11 @@ public class GrapfView : MonoBehaviour
 
             Vector3 currentNodeCoordinate = new Vector3(node.GetCoordinate().x, node.GetCoordinate().y);
             Gizmos.DrawWireSphere(currentNodeCoordinate, 0.1f);
-            foreach (var neighborConnections in node.GetNeighbors())
+            foreach (INode<Vector2Int> neighborConnections in node.GetNeighbors())
             {
-                Vector2Int vector2Int = grapf.nodes[neighborConnections.GetDestination()].GetCoordinate();
+                Vector2Int vector2Int = neighborConnections.GetCoordinate();
+                
+                
                 Vector3 nodePos = new Vector3(vector2Int.x, vector2Int.y);
                 Gizmos.color = Color.yellow;
                 Gizmos.DrawLine(currentNodeCoordinate, nodePos);

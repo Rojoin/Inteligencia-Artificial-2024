@@ -1,17 +1,18 @@
-﻿public interface INode
+﻿using System.Collections.Generic;
+
+public interface INode
 {
     public bool IsBloqued();
     public bool IsEqual(INode other);
     public int GetID();
+    public int GetWeight();
     public void SetID(int id);
-    public void SetNeighbor(TransitionToNode tNode);
-
-    //Todo: Change to Transitions
-    public TransitionToNode[] GetNeighbors();
 }
 
-public interface INode<Coorninate>
+public interface INode<Coordinate> : INode
 {
-    public void SetCoordinate(Coorninate coordinateType);
-    public Coorninate GetCoordinate();
+    public void SetCoordinate(Coordinate coordinateType);
+    public void SetNeighbor(INode<Coordinate> tNode);
+    public ICollection<INode<Coordinate>> GetNeighbors();
+    public Coordinate GetCoordinate();
 }

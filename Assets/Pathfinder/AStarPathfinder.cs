@@ -1,17 +1,27 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 
-public class AStarPathfinder<NodeType> : Pathfinder<NodeType> where NodeType : INode
+
+public class AStarPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coordinate> where NodeType : class, INode<Coordinate>
 {
+
     protected override int Distance(NodeType A, NodeType B)
     {
-        throw new System.NotImplementedException();
+        return useManhattan
+            ? graph.GetManhattanDistance(A, B) + B.GetWeight()
+            : graph.GetEuclideanDistance(A, B) + B.GetWeight();
     }
-
-    protected override TransitionToNode[] GetNeighbors(NodeType node)
+    protected override ICollection<NodeType> GetNeighbors(NodeType node)
     {
-        
-        throw new System.NotImplementedException();
+        ICollection<INode<Coordinate>> neighbors = node.GetNeighbors();
+        List<NodeType> neighborsList = new List<NodeType>();
+
+        foreach (var neighbor in neighbors)
+        {
+            neighborsList.Add(neighbor as NodeType);
+        }
+
+        return neighborsList;
     }
 
     protected override bool IsBloqued(NodeType node)
@@ -21,7 +31,7 @@ public class AStarPathfinder<NodeType> : Pathfinder<NodeType> where NodeType : I
 
     protected override int MoveToNeighborCost(NodeType A, NodeType b)
     {
-        throw new System.NotImplementedException();
+        return b.GetWeight();
     }
 
     protected override bool NodesEquals(NodeType A, NodeType B)
