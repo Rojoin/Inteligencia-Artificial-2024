@@ -1,5 +1,12 @@
 ﻿using System.Collections.Generic;
 
+public enum NodeTravelType
+{
+    Mine,
+    HumanCenter,
+    Grass,
+    Rocks
+}
 public interface INode
 {
     public bool IsBloqued();
@@ -7,6 +14,8 @@ public interface INode
     public int GetID();
     public int GetWeight();
     public void SetID(int id);
+    public void GetNodeType();
+    public void SetNodeType(NodeTravelType type);
 }
 
 public interface INode<Coordinate> : INode
@@ -15,4 +24,8 @@ public interface INode<Coordinate> : INode
     public void SetNeighbor(INode<Coordinate> tNode);
     public ICollection<INode<Coordinate>> GetNeighbors();
     public Coordinate GetCoordinate();
+}
+public interface ITraveler
+{
+    public bool CanTravelNode(NodeTravelType type);
 }

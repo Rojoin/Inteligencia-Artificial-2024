@@ -45,10 +45,10 @@ public abstract class Pathfinder<NodeType,Coordinate> where NodeType : INode<Coo
                 return GeneratePath(startNode, destinationNode);
             }
 
-            foreach (NodeType nodeNeighbor in GetNeighbors(currentNode))
+            foreach (NodeType neighbor in GetNeighbors(currentNode))
             {
-
-                NodeType neighbor = (NodeType)nodeNeighbor;
+                //
+                // NodeType neighbor = graph.ToArray()[tNeighbour.GetDestination()];
                 
                 if (!nodes.ContainsKey(neighbor) ||
                 IsBloqued(neighbor) ||
@@ -91,7 +91,7 @@ public abstract class Pathfinder<NodeType,Coordinate> where NodeType : INode<Coo
         }
     }
 
-    protected abstract  ICollection<NodeType> GetNeighbors(NodeType node);
+    protected abstract ICollection<NodeType> GetNeighbors(NodeType node);
 
     protected abstract int Distance(NodeType A, NodeType B);
 
@@ -100,4 +100,5 @@ public abstract class Pathfinder<NodeType,Coordinate> where NodeType : INode<Coo
     protected abstract int MoveToNeighborCost(NodeType A, NodeType b);
 
     protected abstract bool IsBloqued(NodeType node);
+    protected abstract bool IsImpassable(NodeType node, ITraveler traveler);
 }

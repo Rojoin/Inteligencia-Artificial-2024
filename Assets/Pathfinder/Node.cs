@@ -40,6 +40,15 @@ public class Node<Coordinate> : INode<Coordinate>, IEquatable<Node<Coordinate>>
     public int GetWeight() => weight;
 
     public void SetID(int id) => this.id = id;
+    public void GetNodeType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void SetNodeType(NodeTravelType type)
+    {
+        throw new NotImplementedException();
+    }
 
     public void SetNeighbor(INode<Coordinate> tNode)
     {

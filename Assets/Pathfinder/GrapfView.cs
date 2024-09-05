@@ -6,7 +6,7 @@ public class GrapfView : MonoBehaviour
     public int nodesX = 3;
     public int nodesY = 3;
 
-    void Start()
+    void OnEnable()
     {
         grapf = new Vector2IntGrapf<Node<Vector2Int>>(nodesX, nodesY);
     }

@@ -29,6 +29,11 @@ public class AStarPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coordi
         return node.IsBloqued();
     }
 
+    protected override bool IsImpassable(NodeType node, ITraveler traveler)
+    {
+        throw new NotImplementedException();
+    }
+
     protected override int MoveToNeighborCost(NodeType A, NodeType b)
     {
         return b.GetWeight();

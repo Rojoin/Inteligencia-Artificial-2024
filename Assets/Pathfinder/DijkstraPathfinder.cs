@@ -21,8 +21,6 @@ public class DijkstraPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coo
         }
 
         return neighborsList;
-
-
     }
 
     protected override bool IsBloqued(NodeType node)
@@ -30,9 +28,16 @@ public class DijkstraPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coo
         return node.IsBloqued();
     }
 
+    protected override bool IsImpassable(NodeType node, ITraveler traveler)
+    {
+        throw new System.NotImplementedException();
+    }
+
     protected override int MoveToNeighborCost(NodeType A, NodeType b)
     {
-        return 0;
+        return useManhattan
+            ? graph.GetManhattanDistance(A, b)
+            : graph.GetEuclideanDistance(A, b);
     }
 
     protected override bool NodesEquals(NodeType A, NodeType B)

@@ -25,6 +25,11 @@ public class DepthFirstPathfinder<NodeType,Coordinate> : Pathfinder<NodeType,Coo
         return node.IsBloqued();
     }
 
+    protected override bool IsImpassable(NodeType node, ITraveler traveler)
+    {
+        throw new System.NotImplementedException();
+    }
+
     protected override int MoveToNeighborCost(NodeType A, NodeType b)
     {
         return 0;

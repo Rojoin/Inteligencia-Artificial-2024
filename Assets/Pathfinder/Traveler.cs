@@ -14,7 +14,7 @@ public class Traveler : MonoBehaviour
     private Node<Vector2Int> startNode; 
     private Node<Vector2Int> destinationNode;
 
-    void Start()
+    void OnEnable()
     {
         startNode = new Node<Vector2Int>();
         // startNode.SetCoordinate(new Vector2Int(Random.Range(0, grapfView.nodesX), Random.Range(0, grapfView.nodesY)));
@@ -24,8 +24,16 @@ public class Traveler : MonoBehaviour
         // destinationNode.SetCoordinate(new Vector2Int(Random.Range(0, grapfView.nodesX), Random.Range(0, grapfView.nodesY)));
         // destinationNode.SetNeighbor(new TransitionToNode(Random.Range(0,grapfView.nodesX*grapfView.nodesY)));
 
-        startNode = grapfView.grapf.nodes[Random.Range(0, grapfView.grapf.nodes.Count)];
-        destinationNode = grapfView.grapf.nodes[Random.Range(0, grapfView.grapf.nodes.Count)];
+        int firstRandomCard = Random.Range(0, grapfView.grapf.nodes.Count);
+        startNode = grapfView.grapf.nodes[firstRandomCard];
+        
+        int secondRandom = Random.Range(0, grapfView.grapf.nodes.Count);
+        while (firstRandomCard == secondRandom)
+        {
+            secondRandom = Random.Range(0, grapfView.grapf.nodes.Count);
+        }
+
+        destinationNode = grapfView.grapf.nodes[secondRandom];
         
         // grapfView.grapf.nodes.Insert(0,startNode);
         // grapfView.grapf.nodes.Add(destinationNode);
@@ -41,4 +49,19 @@ public class Traveler : MonoBehaviour
             yield return new WaitForSeconds(1.0f);
         }
     }
+    private void OnDrawGizmos()
+    {
+        if (!Application.isPlaying)
+            return;
+    
+      
+                Gizmos.color = Color.blue;
+
+            Vector3 currentNodeCoordinate = new Vector3(startNode.GetCoordinate().x, startNode.GetCoordinate().y);
+            Gizmos.DrawWireSphere(currentNodeCoordinate, 0.1f); 
+             currentNodeCoordinate = new Vector3(destinationNode.GetCoordinate().x, destinationNode.GetCoordinate().y);
+            Gizmos.DrawWireSphere(currentNodeCoordinate, 0.1f);
+     
+    }
+    
 }
