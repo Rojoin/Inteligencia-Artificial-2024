@@ -27,7 +27,7 @@ public class DepthFirstPathfinder<NodeType,Coordinate> : Pathfinder<NodeType,Coo
 
     protected override bool IsImpassable(NodeType node, ITraveler traveler)
     {
-        throw new System.NotImplementedException();
+        return false;
     }
 
     protected override int MoveToNeighborCost(NodeType A, NodeType b)

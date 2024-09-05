@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public abstract class Pathfinder<NodeType,Coordinate> where NodeType : INode<Coordinate>
+public abstract class Pathfinder<NodeType, Coordinate> where NodeType : INode<Coordinate>
 {
     protected IDistance<NodeType> graph;
     protected bool useManhattan = true;
-    public List<NodeType> FindPath(NodeType startNode, NodeType destinationNode, ICollection<NodeType> graph)
+
+    public List<NodeType> FindPath(NodeType startNode, NodeType destinationNode, ICollection<NodeType> graph,
+        ITraveler traveler)
     {
         Dictionary<NodeType, (NodeType Parent, int AcumulativeCost, int Heuristic)> nodes =
             new Dictionary<NodeType, (NodeType Parent, int AcumulativeCost, int Heuristic)>();
@@ -19,8 +21,8 @@ public abstract class Pathfinder<NodeType,Coordinate> where NodeType : INode<Coo
 
         List<NodeType> openList = new List<NodeType>();
         openList.Add(startNode);
-  
-        
+
+
         List<NodeType> closedList = new List<NodeType>();
         while (openList.Count > 0)
         {
@@ -30,7 +32,7 @@ public abstract class Pathfinder<NodeType,Coordinate> where NodeType : INode<Coo
             for (int i = 1; i < openList.Count; i++)
             {
                 if (nodes[openList[i]].AcumulativeCost + nodes[openList[i]].Heuristic <
-                nodes[currentNode].AcumulativeCost + nodes[currentNode].Heuristic)
+                    nodes[currentNode].AcumulativeCost + nodes[currentNode].Heuristic)
                 {
                     currentNode = openList[i];
                     currentIndex = i;
@@ -39,7 +41,7 @@ public abstract class Pathfinder<NodeType,Coordinate> where NodeType : INode<Coo
 
             openList.RemoveAt(currentIndex);
             closedList.Add(currentNode);
-            
+
             if (NodesEquals(currentNode, destinationNode))
             {
                 return GeneratePath(startNode, destinationNode);
@@ -49,10 +51,9 @@ public abstract class Pathfinder<NodeType,Coordinate> where NodeType : INode<Coo
             {
                 //
                 // NodeType neighbor = graph.ToArray()[tNeighbour.GetDestination()];
-                
-                if (!nodes.ContainsKey(neighbor) ||
-                IsBloqued(neighbor) ||
-                closedList.Contains(neighbor))
+
+                if (!nodes.ContainsKey(neighbor) || IsBloqued(neighbor) ||
+                    closedList.Contains(neighbor) || IsImpassable(neighbor, traveler))
                 {
                     continue;
                 }

@@ -1,17 +1,20 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
-public class Traveler : MonoBehaviour
+public class Traveler : MonoBehaviour , ITraveler
 {
     public GrapfView grapfView;
-    
-  //  private AStarPathfinder<Node<Vector2Int>> Pathfinder;
+
+    //  private AStarPathfinder<Node<Vector2Int>> Pathfinder;
     //private DijstraPathfinder<Node<Vector2Int>> Pathfinder;
-    private DepthFirstPathfinder<Node<Vector2Int>,Vector2Int> Pathfinder = new DepthFirstPathfinder<Node<Vector2Int>,Vector2Int>();
+    private DepthFirstPathfinder<Node<Vector2Int>, Vector2Int> Pathfinder =
+        new DepthFirstPathfinder<Node<Vector2Int>, Vector2Int>();
     //private BreadthPathfinder<Node<Vector2Int>> Pathfinder;
 
-    private Node<Vector2Int> startNode; 
+    private Node<Vector2Int> startNode;
     private Node<Vector2Int> destinationNode;
 
     void OnEnable()
@@ -26,7 +29,7 @@ public class Traveler : MonoBehaviour
 
         int firstRandomCard = Random.Range(0, grapfView.grapf.nodes.Count);
         startNode = grapfView.grapf.nodes[firstRandomCard];
-        
+
         int secondRandom = Random.Range(0, grapfView.grapf.nodes.Count);
         while (firstRandomCard == secondRandom)
         {
@@ -34,14 +37,14 @@ public class Traveler : MonoBehaviour
         }
 
         destinationNode = grapfView.grapf.nodes[secondRandom];
-        
+
         // grapfView.grapf.nodes.Insert(0,startNode);
         // grapfView.grapf.nodes.Add(destinationNode);
-        List<Node<Vector2Int>> path = Pathfinder.FindPath(startNode, destinationNode, grapfView.grapf.nodes);
+        List<Node<Vector2Int>> path = Pathfinder.FindPath(startNode, destinationNode, grapfView.grapf.nodes, this);
         StartCoroutine(Move(path));
     }
 
-    public IEnumerator Move(List<Node<Vector2Int>> path) 
+    public IEnumerator Move(List<Node<Vector2Int>> path)
     {
         foreach (Node<Vector2Int> node in path)
         {
@@ -49,19 +52,23 @@ public class Traveler : MonoBehaviour
             yield return new WaitForSeconds(1.0f);
         }
     }
+
     private void OnDrawGizmos()
     {
         if (!Application.isPlaying)
             return;
-    
-      
-                Gizmos.color = Color.blue;
 
-            Vector3 currentNodeCoordinate = new Vector3(startNode.GetCoordinate().x, startNode.GetCoordinate().y);
-            Gizmos.DrawWireSphere(currentNodeCoordinate, 0.1f); 
-             currentNodeCoordinate = new Vector3(destinationNode.GetCoordinate().x, destinationNode.GetCoordinate().y);
-            Gizmos.DrawWireSphere(currentNodeCoordinate, 0.1f);
-     
+
+        Gizmos.color = Color.blue;
+
+        Vector3 currentNodeCoordinate = new Vector3(startNode.GetCoordinate().x, startNode.GetCoordinate().y);
+        Gizmos.DrawWireSphere(currentNodeCoordinate, 0.1f);
+        currentNodeCoordinate = new Vector3(destinationNode.GetCoordinate().x, destinationNode.GetCoordinate().y);
+        Gizmos.DrawWireSphere(currentNodeCoordinate, 0.1f);
     }
-    
+
+    public bool CanTravelNode(NodeTravelType type)
+    {
+        return true;
+    }
 }

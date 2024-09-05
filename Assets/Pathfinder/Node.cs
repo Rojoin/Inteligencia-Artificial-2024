@@ -9,6 +9,7 @@ public class Node<Coordinate> : INode<Coordinate>, IEquatable<Node<Coordinate>>
     private Coordinate coordinate;
     private int weight;
     public bool isBlocked = false;
+    public NodeTravelType type;
     public int id;
     [SerializeField] private List<INode<Coordinate>>neighbours = new();
 
@@ -40,14 +41,14 @@ public class Node<Coordinate> : INode<Coordinate>, IEquatable<Node<Coordinate>>
     public int GetWeight() => weight;
 
     public void SetID(int id) => this.id = id;
-    public void GetNodeType()
+    public NodeTravelType GetNodeType()
     {
-        throw new NotImplementedException();
+        return type;
     }
 
     public void SetNodeType(NodeTravelType type)
     {
-        throw new NotImplementedException();
+        this.type = type;
     }
 
     public void SetNeighbor(INode<Coordinate> tNode)

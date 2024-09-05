@@ -14,7 +14,7 @@ public interface INode
     public int GetID();
     public int GetWeight();
     public void SetID(int id);
-    public void GetNodeType();
+    public NodeTravelType GetNodeType();
     public void SetNodeType(NodeTravelType type);
 }
 
@@ -24,8 +24,4 @@ public interface INode<Coordinate> : INode
     public void SetNeighbor(INode<Coordinate> tNode);
     public ICollection<INode<Coordinate>> GetNeighbors();
     public Coordinate GetCoordinate();
-}
-public interface ITraveler
-{
-    public bool CanTravelNode(NodeTravelType type);
 }

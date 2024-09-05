@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 
 
-public class AStarPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coordinate> where NodeType : class, INode<Coordinate>
+public class AStarPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coordinate>
+    where NodeType : class, INode<Coordinate>
 {
-
     protected override int Distance(NodeType A, NodeType B)
     {
         return useManhattan
             ? graph.GetManhattanDistance(A, B) + B.GetWeight()
             : graph.GetEuclideanDistance(A, B) + B.GetWeight();
     }
+
     protected override ICollection<NodeType> GetNeighbors(NodeType node)
     {
         ICollection<INode<Coordinate>> neighbors = node.GetNeighbors();
@@ -31,12 +32,12 @@ public class AStarPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coordi
 
     protected override bool IsImpassable(NodeType node, ITraveler traveler)
     {
-        throw new NotImplementedException();
+        return !traveler.CanTravelNode(node.GetNodeType());
     }
 
     protected override int MoveToNeighborCost(NodeType A, NodeType b)
     {
-        return b.GetWeight();
+        return Distance(A, b) + b.GetWeight();
     }
 
     protected override bool NodesEquals(NodeType A, NodeType B)

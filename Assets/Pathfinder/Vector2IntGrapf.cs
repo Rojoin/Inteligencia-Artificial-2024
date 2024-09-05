@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 [Serializable]
 public class Vector2IntGrapf<NodeType> : IDistance<NodeType>
@@ -26,6 +27,21 @@ public class Vector2IntGrapf<NodeType> : IDistance<NodeType>
             }
         }
 
+        SetCardinalConnections(x, y);
+        SetRandomType();
+    }
+
+    private void SetRandomType()
+    {
+        foreach (NodeType node in nodes)
+        {
+            NodeTravelType nodeTravelType = (NodeTravelType)Random.Range(0,Enum.GetValues(typeof(NodeTravelType)).Length);
+            node.SetNodeType(nodeTravelType);
+        }
+    }
+
+    private void SetCardinalConnections(int x, int y)
+    {
         for (int i = 0; i < x; i++)
         {
             for (int j = 0; j < y; j++)
