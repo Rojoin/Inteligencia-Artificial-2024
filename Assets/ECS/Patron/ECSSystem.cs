@@ -15,6 +15,7 @@ public abstract class ECSSystem
 
     protected abstract void PostExecute(float deltaTime);
 }
+
 public abstract class ECSResponce
 {
     public void Run(float deltaTime)
