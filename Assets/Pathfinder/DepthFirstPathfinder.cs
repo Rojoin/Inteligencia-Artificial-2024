@@ -2,7 +2,7 @@
 
 public class DepthFirstPathfinder<NodeType,Coordinate> : Pathfinder<NodeType,Coordinate>  where NodeType : class, INode<Coordinate>
 {
-    protected override int Distance(NodeType A, NodeType B)
+    protected override float Distance(NodeType A, NodeType B)
     {
         return 0;
     }
@@ -30,7 +30,7 @@ public class DepthFirstPathfinder<NodeType,Coordinate> : Pathfinder<NodeType,Coo
         return false;
     }
 
-    protected override int MoveToNeighborCost(NodeType A, NodeType b)
+    protected override float MoveToNeighborCost(NodeType A, NodeType b)
     {
         return 0;
     }

@@ -4,7 +4,7 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 
 [Serializable]
-public class Vector2IntGrapf<NodeType> : IDistance<NodeType>
+public class Vector2IntGrapf<NodeType> : IGraph<NodeType>,IDistance<NodeType>
     where NodeType : INode<UnityEngine.Vector2Int>, INode, new()
 {
     public List<NodeType> nodes = new List<NodeType>();
@@ -35,8 +35,10 @@ public class Vector2IntGrapf<NodeType> : IDistance<NodeType>
     {
         foreach (NodeType node in nodes)
         {
-            NodeTravelType nodeTravelType = (NodeTravelType)Random.Range(0,Enum.GetValues(typeof(NodeTravelType)).Length);
+            int range = Random.Range(0,Enum.GetValues(typeof(NodeTravelType)).Length);
+            NodeTravelType nodeTravelType = (NodeTravelType)range;
             node.SetNodeType(nodeTravelType);
+            node.SetWeight(range);
         }
     }
 
@@ -77,19 +79,23 @@ public class Vector2IntGrapf<NodeType> : IDistance<NodeType>
             randomIndex = random.Next(nodes.Count);
         }
 
-        // current.SetNeighbor(new TransitionToNode(randomIndex));
-        // nodes[randomIndex].SetNeighbor(new TransitionToNode(index));
+
     }
 
-    public int GetManhattanDistance(NodeType a, NodeType b)
+    public float GetManhattanDistance(NodeType a, NodeType b)
     {
         return Mathf.Abs(a.GetCoordinate().x - b.GetCoordinate().x) +
                Mathf.Abs(a.GetCoordinate().y - b.GetCoordinate().y);
     }
 
-    public int GetEuclideanDistance(NodeType a, NodeType b)
+    public float GetEuclideanDistance(NodeType a, NodeType b)
     {
-        return (int)Mathf.Sqrt(Mathf.Pow(a.GetCoordinate().x - b.GetCoordinate().x, 2) +
+        return Mathf.Sqrt(Mathf.Pow(a.GetCoordinate().x - b.GetCoordinate().x, 2) +
                                Mathf.Pow(Mathf.Abs(a.GetCoordinate().y - b.GetCoordinate().y), 2));
+    }
+
+    public ICollection<NodeType> GetNodes()
+    {
+        return nodes;
     }
 }

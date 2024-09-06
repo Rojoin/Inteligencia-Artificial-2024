@@ -1,5 +1,12 @@
-﻿public interface IDistance<NodeType> where NodeType : INode
+﻿using System.Collections.Generic;
+
+public interface IDistance<NodeType> where NodeType : INode
 {
-    public int GetManhattanDistance(NodeType a, NodeType b);
-    public int GetEuclideanDistance(NodeType a, NodeType b);
+    public float GetManhattanDistance(NodeType a, NodeType b);
+    public float GetEuclideanDistance(NodeType a, NodeType b);
+}
+public interface IGraph<NodeType>: IDistance<NodeType> where NodeType : INode
+{
+    public ICollection<NodeType> GetNodes();
+
 }

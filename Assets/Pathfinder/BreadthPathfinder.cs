@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class BreadthPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coordinate>
     where NodeType : class, INode<Coordinate>
 {
-    protected override int Distance(NodeType A, NodeType B)
+    protected override float Distance(NodeType A, NodeType B)
     {
         throw new NotImplementedException();
     }
@@ -32,7 +32,7 @@ public class BreadthPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coor
         throw new NotImplementedException();
     }
 
-    protected override int MoveToNeighborCost(NodeType A, NodeType b)
+    protected override float MoveToNeighborCost(NodeType A, NodeType b)
     {
         return 0;
     }

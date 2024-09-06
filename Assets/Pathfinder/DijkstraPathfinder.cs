@@ -3,7 +3,7 @@
 public class DijkstraPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coordinate>
     where NodeType : class, INode<Coordinate>
 {
-    protected override int Distance(NodeType A, NodeType B)
+    protected override float Distance(NodeType A, NodeType B)
     {
         return useManhattan
             ? graph.GetManhattanDistance(A, B)
@@ -33,7 +33,7 @@ public class DijkstraPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coo
         throw new System.NotImplementedException();
     }
 
-    protected override int MoveToNeighborCost(NodeType A, NodeType b)
+    protected override float MoveToNeighborCost(NodeType A, NodeType b)
     {
         return useManhattan
             ? graph.GetManhattanDistance(A, b)

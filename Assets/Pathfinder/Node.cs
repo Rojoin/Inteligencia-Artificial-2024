@@ -7,7 +7,7 @@ public class Node<Coordinate> : INode<Coordinate>, IEquatable<Node<Coordinate>>
     where Coordinate : IEquatable<Coordinate>
 {
     private Coordinate coordinate;
-    private int weight;
+    private float weight;
     public bool isBlocked = false;
     public NodeTravelType type;
     public int id;
@@ -33,12 +33,13 @@ public class Node<Coordinate> : INode<Coordinate>, IEquatable<Node<Coordinate>>
         return coordinate.Equals(((Node<Coordinate>)other).GetCoordinate());
     }
 
-    public int GetID()
-    {
-        return id;
-    }
 
-    public int GetWeight() => weight;
+
+    public float GetWeight() => weight;
+    public void SetWeight(float weight)
+    {
+        this.weight = weight;
+    }
 
     public void SetID(int id) => this.id = id;
     public NodeTravelType GetNodeType()

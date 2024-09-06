@@ -11,18 +11,21 @@ public class Villager : MonoBehaviour , ITraveler
 
     private void OnEnable()
     {
-        int firstRandomCard = Random.Range(0, grafp.grapf.nodes.Count);
-        startNode = grafp.grapf.nodes[firstRandomCard];
-        
-        int secondRandom = Random.Range(0, grafp.grapf.nodes.Count);
-        while (firstRandomCard == secondRandom)
-        {
-            secondRandom = Random.Range(0, grafp.grapf.nodes.Count);
-        }
+        // int firstRandomCard = Random.Range(0, grafp.grapf.nodes.Count);
+        // startNode = grafp.grapf.nodes[firstRandomCard];
+        //
+        // int secondRandom = Random.Range(0, grafp.grapf.nodes.Count);
+        // while (firstRandomCard == secondRandom)
+        // {
+        //     secondRandom = Random.Range(0, grafp.grapf.nodes.Count);
+        // }
+        //
+        // destinationNode = grafp.grapf.nodes[secondRandom];
 
-        destinationNode = grafp.grapf.nodes[secondRandom];
+        startNode = grafp.grapf.nodes[0];
+        destinationNode = grafp.grapf.nodes[^1];
         
-        List<Node<Vector2Int>> path = Pathfinder.FindPath(startNode, destinationNode, grafp.grapf.nodes, this);
+        List<Node<Vector2Int>> path = Pathfinder.FindPath(startNode, destinationNode, grafp.grapf, this);
         StartCoroutine(Move(path));
     }
     public IEnumerator Move(List<Node<Vector2Int>> path) 

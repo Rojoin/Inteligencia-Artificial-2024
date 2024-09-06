@@ -8,10 +8,10 @@ public class Traveler : MonoBehaviour , ITraveler
 {
     public GrapfView grapfView;
 
-    //  private AStarPathfinder<Node<Vector2Int>> Pathfinder;
+      private AStarPathfinder<Node<Vector2Int>,Vector2Int> Pathfinder = new();
     //private DijstraPathfinder<Node<Vector2Int>> Pathfinder;
-    private DepthFirstPathfinder<Node<Vector2Int>, Vector2Int> Pathfinder =
-        new DepthFirstPathfinder<Node<Vector2Int>, Vector2Int>();
+    // private DepthFirstPathfinder<Node<Vector2Int>, Vector2Int> Pathfinder =
+    //     new DepthFirstPathfinder<Node<Vector2Int>, Vector2Int>();
     //private BreadthPathfinder<Node<Vector2Int>> Pathfinder;
 
     private Node<Vector2Int> startNode;
@@ -40,7 +40,7 @@ public class Traveler : MonoBehaviour , ITraveler
 
         // grapfView.grapf.nodes.Insert(0,startNode);
         // grapfView.grapf.nodes.Add(destinationNode);
-        List<Node<Vector2Int>> path = Pathfinder.FindPath(startNode, destinationNode, grapfView.grapf.nodes, this);
+        List<Node<Vector2Int>> path = Pathfinder.FindPath(startNode, destinationNode, grapfView.grapf, this);
         StartCoroutine(Move(path));
     }
 
@@ -53,7 +53,7 @@ public class Traveler : MonoBehaviour , ITraveler
         }
     }
 
-    private void OnDrawGizmos()
+    private void OnDrawGizmosSelected()
     {
         if (!Application.isPlaying)
             return;

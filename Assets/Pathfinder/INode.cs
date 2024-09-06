@@ -11,8 +11,8 @@ public interface INode
 {
     public bool IsBloqued();
     public bool IsEqual(INode other);
-    public int GetID();
-    public int GetWeight();
+    public float GetWeight();
+    public void SetWeight(float weight);
     public void SetID(int id);
     public NodeTravelType GetNodeType();
     public void SetNodeType(NodeTravelType type);

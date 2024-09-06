@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class AStarPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coordinate>
     where NodeType : class, INode<Coordinate>
 {
-    protected override int Distance(NodeType A, NodeType B)
+    protected override float Distance(NodeType A, NodeType B)
     {
         return useManhattan
             ? graph.GetManhattanDistance(A, B) + B.GetWeight()
@@ -35,7 +35,7 @@ public class AStarPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coordi
         return !traveler.CanTravelNode(node.GetNodeType());
     }
 
-    protected override int MoveToNeighborCost(NodeType A, NodeType b)
+    protected override float MoveToNeighborCost(NodeType A, NodeType b)
     {
         return Distance(A, b) + b.GetWeight();
     }

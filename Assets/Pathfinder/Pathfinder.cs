@@ -6,14 +6,14 @@ public abstract class Pathfinder<NodeType, Coordinate> where NodeType : INode<Co
     protected IDistance<NodeType> graph;
     protected bool useManhattan = true;
 
-    public List<NodeType> FindPath(NodeType startNode, NodeType destinationNode, ICollection<NodeType> graph,
+    public List<NodeType> FindPath(NodeType startNode, NodeType destinationNode, IGraph<NodeType> graph,
         ITraveler traveler)
     {
-        Dictionary<NodeType, (NodeType Parent, int AcumulativeCost, int Heuristic)> nodes =
-            new Dictionary<NodeType, (NodeType Parent, int AcumulativeCost, int Heuristic)>();
+        Dictionary<NodeType, (NodeType Parent, float AcumulativeCost, float Heuristic)> nodes =
+            new Dictionary<NodeType, (NodeType Parent, float AcumulativeCost, float Heuristic)>();
 
-        this.graph = graph as IDistance<NodeType>;
-        foreach (NodeType node in graph)
+        this.graph = graph;
+        foreach (NodeType node in graph.GetNodes())
         {
             nodes.Add(node, (default, 0, 0));
         }
@@ -58,7 +58,7 @@ public abstract class Pathfinder<NodeType, Coordinate> where NodeType : INode<Co
                     continue;
                 }
 
-                int tentativeNewAcumulatedCost = 0;
+                float tentativeNewAcumulatedCost = 0;
                 tentativeNewAcumulatedCost += nodes[currentNode].AcumulativeCost;
                 tentativeNewAcumulatedCost += MoveToNeighborCost(currentNode, neighbor);
 
@@ -94,11 +94,11 @@ public abstract class Pathfinder<NodeType, Coordinate> where NodeType : INode<Co
 
     protected abstract ICollection<NodeType> GetNeighbors(NodeType node);
 
-    protected abstract int Distance(NodeType A, NodeType B);
+    protected abstract float Distance(NodeType A, NodeType B);
 
     protected abstract bool NodesEquals(NodeType A, NodeType B);
 
-    protected abstract int MoveToNeighborCost(NodeType A, NodeType b);
+    protected abstract float MoveToNeighborCost(NodeType A, NodeType b);
 
     protected abstract bool IsBloqued(NodeType node);
     protected abstract bool IsImpassable(NodeType node, ITraveler traveler);
