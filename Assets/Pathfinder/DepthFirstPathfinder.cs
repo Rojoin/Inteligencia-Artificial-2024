@@ -22,7 +22,7 @@ public class DepthFirstPathfinder<NodeType,Coordinate> : Pathfinder<NodeType,Coo
 
     protected override bool IsBloqued(NodeType node)
     {
-        return node.IsBloqued();
+        return node.IsBlocked();
     }
 
     protected override bool IsImpassable(NodeType node, ITraveler traveler)

@@ -39,6 +39,10 @@ public class Vector2IntGrapf<NodeType> : IGraph<NodeType>,IDistance<NodeType>
             NodeTravelType nodeTravelType = (NodeTravelType)range;
             node.SetNodeType(nodeTravelType);
             node.SetWeight(range);
+            if (nodeTravelType == NodeTravelType.Water)
+            {
+                node.SetBlocked();
+            }
         }
     }
 

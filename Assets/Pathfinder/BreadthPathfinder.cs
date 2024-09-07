@@ -24,7 +24,7 @@ public class BreadthPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coor
 
     protected override bool IsBloqued(NodeType node)
     {
-       return node.IsBloqued();
+       return node.IsBlocked();
     }
 
     protected override bool IsImpassable(NodeType node, ITraveler traveler)

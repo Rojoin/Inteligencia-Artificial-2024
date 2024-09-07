@@ -7,6 +7,7 @@ public class GrapfView : MonoBehaviour
     [SerializeField] private Sprite grass;
     [SerializeField] private Sprite rock;
     [SerializeField] private Sprite mine;
+    [SerializeField] private Sprite water;
     [SerializeField] private Sprite humanCenter;
     public GameObject tile;
     public int nodesX = 3;
@@ -37,6 +38,7 @@ public class GrapfView : MonoBehaviour
             NodeTravelType.HumanCenter => humanCenter,
             NodeTravelType.Grass => grass,
             NodeTravelType.Rocks => rock,
+            NodeTravelType.Water => water,
             _ => throw new ArgumentOutOfRangeException(nameof(getNodeType), getNodeType, null)
         };
     }
@@ -47,7 +49,7 @@ public class GrapfView : MonoBehaviour
             return;
         foreach (Node<Vector2Int> node in grapf.nodes)
         {
-            if (node.IsBloqued())
+            if (node.IsBlocked())
                 Gizmos.color = Color.red;
             else
                 Gizmos.color = Color.green;

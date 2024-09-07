@@ -5,11 +5,13 @@ public enum NodeTravelType
     Mine,
     HumanCenter,
     Grass,
-    Rocks
+    Rocks,
+    Water
 }
 public interface INode
 {
-    public bool IsBloqued();
+    public bool IsBlocked();
+    public void SetBlocked(bool value = true);
     public bool IsEqual(INode other);
     public float GetWeight();
     public void SetWeight(float weight);

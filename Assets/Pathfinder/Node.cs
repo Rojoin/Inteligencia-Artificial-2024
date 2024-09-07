@@ -23,9 +23,14 @@ public class Node<Coordinate> : INode<Coordinate>, IEquatable<Node<Coordinate>>
         return coordinate;
     }
 
-    public bool IsBloqued()
+    public bool IsBlocked()
     {
         return isBlocked;
+    }
+
+    public void SetBlocked(bool value = true)
+    {
+        isBlocked = value;
     }
 
     public bool IsEqual(INode other)

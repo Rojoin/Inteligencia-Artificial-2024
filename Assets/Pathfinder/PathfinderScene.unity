@@ -347,6 +347,7 @@ MonoBehaviour:
   grass: {fileID: -258502911, guid: aa72e6bfc121a574e8e6555f9d086b57, type: 3}
   rock: {fileID: 1959538934, guid: aa72e6bfc121a574e8e6555f9d086b57, type: 3}
   mine: {fileID: 1037547701, guid: aa72e6bfc121a574e8e6555f9d086b57, type: 3}
+  water: {fileID: 604003227, guid: aa72e6bfc121a574e8e6555f9d086b57, type: 3}
   humanCenter: {fileID: -614673383, guid: aa72e6bfc121a574e8e6555f9d086b57, type: 3}
   tile: {fileID: 1302279718}
   nodesX: 10

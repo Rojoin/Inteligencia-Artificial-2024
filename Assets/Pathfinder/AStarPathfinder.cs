@@ -27,7 +27,7 @@ public class AStarPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coordi
 
     protected override bool IsBloqued(NodeType node)
     {
-        return node.IsBloqued();
+        return node.IsBlocked();
     }
 
     protected override bool IsImpassable(NodeType node, ITraveler traveler)
