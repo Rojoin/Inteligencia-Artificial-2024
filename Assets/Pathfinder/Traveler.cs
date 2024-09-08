@@ -27,21 +27,20 @@ public class Traveler : MonoBehaviour , ITraveler
         // destinationNode.SetCoordinate(new Vector2Int(Random.Range(0, grapfView.nodesX), Random.Range(0, grapfView.nodesY)));
         // destinationNode.SetNeighbor(new TransitionToNode(Random.Range(0,grapfView.nodesX*grapfView.nodesY)));
 
-        int firstRandomCard = Random.Range(0, grapfView.grapf.nodes.Count);
-        startNode = grapfView.grapf.nodes[firstRandomCard];
-
-        int secondRandom = Random.Range(0, grapfView.grapf.nodes.Count);
-        while (firstRandomCard == secondRandom)
-        {
-            secondRandom = Random.Range(0, grapfView.grapf.nodes.Count);
-        }
-
-        destinationNode = grapfView.grapf.nodes[secondRandom];
-
-        // grapfView.grapf.nodes.Insert(0,startNode);
-        // grapfView.grapf.nodes.Add(destinationNode);
-        List<Node<Vector2Int>> path = Pathfinder.FindPath(startNode, destinationNode, grapfView.grapf, this);
-        StartCoroutine(Move(path));
+        // int firstRandomCard = Random.Range(0, grapfView.grapf.nodes.Count);
+        // startNode = grapfView.grapf.nodes[firstRandomCard];
+        //
+        // int secondRandom = Random.Range(0, grapfView.grapf.nodes.Count);
+        // while (firstRandomCard == secondRandom)
+        // {
+        //     secondRandom = Random.Range(0, grapfView.grapf.nodes.Count);
+        // }
+        //
+        // destinationNode = grapfView.grapf.nodes[secondRandom];
+        //
+        //
+        // List<Node<Vector2Int>> path = Pathfinder.FindPath(startNode, destinationNode, grapfView.grapf, this);
+        // StartCoroutine(Move(path));
     }
 
     public IEnumerator Move(List<Node<Vector2Int>> path)
@@ -70,5 +69,11 @@ public class Traveler : MonoBehaviour , ITraveler
     public bool CanTravelNode(NodeTravelType type)
     {
         return true;
+    }
+
+    public float GetNodeCostToTravel(NodeTravelType type)
+    {
+
+        return 0;
     }
 }

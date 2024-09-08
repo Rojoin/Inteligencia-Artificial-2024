@@ -60,7 +60,7 @@ public abstract class Pathfinder<NodeType, Coordinate> where NodeType : INode<Co
 
                 float tentativeNewAcumulatedCost = 0;
                 tentativeNewAcumulatedCost += nodes[currentNode].AcumulativeCost;
-                tentativeNewAcumulatedCost += MoveToNeighborCost(currentNode, neighbor);
+                tentativeNewAcumulatedCost += MoveToNeighborCost(currentNode, neighbor, traveler);
 
                 if (!openList.Contains(neighbor) || tentativeNewAcumulatedCost < nodes[currentNode].AcumulativeCost)
                 {
@@ -98,7 +98,7 @@ public abstract class Pathfinder<NodeType, Coordinate> where NodeType : INode<Co
 
     protected abstract bool NodesEquals(NodeType A, NodeType B);
 
-    protected abstract float MoveToNeighborCost(NodeType A, NodeType b);
+    protected abstract float MoveToNeighborCost(NodeType A, NodeType b, ITraveler iTraveler);
 
     protected abstract bool IsBloqued(NodeType node);
     protected abstract bool IsImpassable(NodeType node, ITraveler traveler);

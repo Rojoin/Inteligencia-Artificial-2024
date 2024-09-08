@@ -33,7 +33,7 @@ public class DijkstraPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coo
         throw new System.NotImplementedException();
     }
 
-    protected override float MoveToNeighborCost(NodeType A, NodeType b)
+    protected override float MoveToNeighborCost(NodeType A, NodeType b, ITraveler iTraveler)
     {
         return useManhattan
             ? graph.GetManhattanDistance(A, b)

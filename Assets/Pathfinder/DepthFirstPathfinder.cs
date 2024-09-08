@@ -30,7 +30,7 @@ public class DepthFirstPathfinder<NodeType,Coordinate> : Pathfinder<NodeType,Coo
         return false;
     }
 
-    protected override float MoveToNeighborCost(NodeType A, NodeType b)
+    protected override float MoveToNeighborCost(NodeType A, NodeType b, ITraveler iTraveler)
     {
         return 0;
     }

@@ -32,7 +32,7 @@ public class BreadthPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coor
         throw new NotImplementedException();
     }
 
-    protected override float MoveToNeighborCost(NodeType A, NodeType b)
+    protected override float MoveToNeighborCost(NodeType A, NodeType b, ITraveler iTraveler)
     {
         return 0;
     }

@@ -35,9 +35,9 @@ public class AStarPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coordi
         return !traveler.CanTravelNode(node.GetNodeType());
     }
 
-    protected override float MoveToNeighborCost(NodeType A, NodeType b)
+    protected override float MoveToNeighborCost(NodeType A, NodeType b, ITraveler iTraveler)
     {
-        return Distance(A, b) + b.GetWeight();
+        return Distance(A, b) + b.GetWeight() + iTraveler.GetNodeCostToTravel(b.GetNodeType());
     }
 
     protected override bool NodesEquals(NodeType A, NodeType B)
