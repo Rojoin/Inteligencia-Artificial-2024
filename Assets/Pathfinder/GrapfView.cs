@@ -1,32 +1,66 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GrapfView : MonoBehaviour
 {
-    public Vector2IntGrapf<Node<Vector2Int>> grapf;
+  //  public Vector2IntGrapf<Node<Vector2Int>> grapf;
+  [FormerlySerializedAs("grapf")] public Vector2Graph<Node<Vector2>> graph;
     [SerializeField] private Sprite grass;
     [SerializeField] private Sprite rock;
     [SerializeField] private Sprite mine;
     [SerializeField] private Sprite water;
     [SerializeField] private Sprite humanCenter;
+    private List<GameObject> _tiles = new List<GameObject>();
     public GameObject tile;
     public int nodesX = 3;
     public int nodesY = 3;
-
+    public float offset = 3;
+    [ContextMenu("Generate Map")]
     void OnEnable()
     {
-        grapf = new Vector2IntGrapf<Node<Vector2Int>>(nodesX, nodesY);
+        graph = new Vector2Graph<Node<Vector2>>(nodesX, nodesY,offset);
 
-        DrawMap(grapf);
+        DrawMap(graph);
     }
 
     private void DrawMap(Vector2IntGrapf<Node<Vector2Int>> vector2IntGrapf)
     {
-        foreach (Node<Vector2Int> node in grapf.nodes)
+        // if (_tiles.Count > 0)
+        // {
+        //     foreach (GameObject var in _tiles)
+        //     {
+        //         Destroy(var);
+        //     }
+        //     _tiles.Clear();
+        // }
+        // foreach (Node<Vector2Int> node in grapf.nodes)
+        // {
+        //     var position = new Vector3(node.GetCoordinate().x, node.GetCoordinate().y);
+        //     var newTile = Instantiate(tile, position, Quaternion.identity);
+        //     newTile.GetComponent<SpriteRenderer>().sprite = GetSpriteType(node.GetNodeType());
+        //     _tiles.Add(newTile);
+        // }
+    }
+
+
+    private void DrawMap(Vector2Graph<Node<Vector2>> vector2IntGraph)
+    {
+        if (_tiles.Count > 0)
+        {
+            foreach (GameObject var in _tiles)
+            {
+                Destroy(var);
+            }
+            _tiles.Clear();
+        }
+        foreach (Node<Vector2> node in graph.nodes)
         {
             var position = new Vector3(node.GetCoordinate().x, node.GetCoordinate().y);
             var newTile = Instantiate(tile, position, Quaternion.identity);
             newTile.GetComponent<SpriteRenderer>().sprite = GetSpriteType(node.GetNodeType());
+            _tiles.Add(newTile);
         }
     }
 
@@ -47,24 +81,23 @@ public class GrapfView : MonoBehaviour
     {
         if (!Application.isPlaying)
             return;
-        foreach (Node<Vector2Int> node in grapf.nodes)
-        {
-            if (node.IsBlocked())
-                Gizmos.color = Color.red;
-            else
-                Gizmos.color = Color.green;
-
-            Vector3 currentNodeCoordinate = new Vector3(node.GetCoordinate().x, node.GetCoordinate().y);
-            Gizmos.DrawWireSphere(currentNodeCoordinate, 0.1f);
-            foreach (INode<Vector2Int> neighborConnections in node.GetNeighbors())
-            {
-                Vector2Int vector2Int = neighborConnections.GetCoordinate();
-
-
-                Vector3 nodePos = new Vector3(vector2Int.x, vector2Int.y);
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawLine(currentNodeCoordinate, nodePos);
-            }
-        }
+        // foreach (Node<Vector2> node in grapf.nodes)
+        // {
+        //     if (node.IsBlocked())
+        //         Gizmos.color = Color.red;
+        //     else
+        //         Gizmos.color = Color.green;
+        //
+        //     Vector3 currentNodeCoordinate = new Vector3(node.GetCoordinate().x, node.GetCoordinate().y);
+        //     Gizmos.DrawWireSphere(currentNodeCoordinate, 0.1f);
+        //     foreach (INode<Vector2Int> neighborConnections in node.GetNeighbors())
+        //     {
+        //         Vector2Int vector2Int = neighborConnections.GetCoordinate();
+        //         
+        //         Vector3 nodePos = new Vector3(vector2Int.x, vector2Int.y);
+        //         Gizmos.color = Color.yellow;
+        //         Gizmos.DrawLine(currentNodeCoordinate, nodePos);
+        //     }
+        // }
     }
 }
