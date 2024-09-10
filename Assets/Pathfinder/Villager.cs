@@ -11,7 +11,10 @@ public class Villager : MonoBehaviour, ITraveler
     private Node<Vector2> startNode;
     private Node<Vector2> destinationNode;
     private Coroutine startPathFinding;
-    
+
+    private Func<int> gold;
+    private Func<int> energy;
+
     private void OnEnable()
     {
         if (startPathFinding != null)

@@ -54,6 +54,7 @@ public abstract class State
     public abstract BehaviourActions GetExitBehaviours(params object[] parameters);
 }
 
+
 public sealed class ChaseState : State
 {
     public override BehaviourActions GetTickBehaviours(params object[] parameters)

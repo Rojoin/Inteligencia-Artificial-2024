@@ -8,6 +8,7 @@ public class Node<Coordinate> : INode<Coordinate>, IEquatable<Node<Coordinate>>
 {
     private Coordinate coordinate;
     private float weight;
+    private IPlace place { get; set; }
     public bool isBlocked = false;
     public NodeTravelType type;
     public int id;
@@ -37,8 +38,7 @@ public class Node<Coordinate> : INode<Coordinate>, IEquatable<Node<Coordinate>>
     {
         return coordinate.Equals(((Node<Coordinate>)other).GetCoordinate());
     }
-
-
+    
 
     public float GetWeight() => weight;
     public void SetWeight(float weight)
@@ -55,6 +55,16 @@ public class Node<Coordinate> : INode<Coordinate>, IEquatable<Node<Coordinate>>
     public void SetNodeType(NodeTravelType type)
     {
         this.type = type;
+    }
+
+    public void SetPlace(IPlace place)
+    {
+        this.place = place;
+    }
+
+    public IPlace GetPlace()
+    {
+        return place;
     }
 
     public void SetNeighbor(INode<Coordinate> tNode)

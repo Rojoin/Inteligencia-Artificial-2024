@@ -20,27 +20,8 @@ public class Traveler : MonoBehaviour , ITraveler
     void OnEnable()
     {
         startNode = new Node<Vector2Int>();
-        // startNode.SetCoordinate(new Vector2Int(Random.Range(0, grapfView.nodesX), Random.Range(0, grapfView.nodesY)));
-        //
-        // startNode.SetNeighbor(new TransitionToNode(Random.Range(0,grapfView.nodesX*grapfView.nodesY)));
         destinationNode = new Node<Vector2Int>();
-        // destinationNode.SetCoordinate(new Vector2Int(Random.Range(0, grapfView.nodesX), Random.Range(0, grapfView.nodesY)));
-        // destinationNode.SetNeighbor(new TransitionToNode(Random.Range(0,grapfView.nodesX*grapfView.nodesY)));
 
-        // int firstRandomCard = Random.Range(0, grapfView.grapf.nodes.Count);
-        // startNode = grapfView.grapf.nodes[firstRandomCard];
-        //
-        // int secondRandom = Random.Range(0, grapfView.grapf.nodes.Count);
-        // while (firstRandomCard == secondRandom)
-        // {
-        //     secondRandom = Random.Range(0, grapfView.grapf.nodes.Count);
-        // }
-        //
-        // destinationNode = grapfView.grapf.nodes[secondRandom];
-        //
-        //
-        // List<Node<Vector2Int>> path = Pathfinder.FindPath(startNode, destinationNode, grapfView.grapf, this);
-        // StartCoroutine(Move(path));
     }
 
     public IEnumerator Move(List<Node<Vector2Int>> path)

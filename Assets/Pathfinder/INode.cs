@@ -18,6 +18,8 @@ public interface INode
     public void SetID(int id);
     public NodeTravelType GetNodeType();
     public void SetNodeType(NodeTravelType type);
+    public void SetPlace(IPlace place);
+    public IPlace GetPlace();
 }
 
 public interface INode<Coordinate> : INode

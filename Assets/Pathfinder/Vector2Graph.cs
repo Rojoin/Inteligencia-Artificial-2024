@@ -39,12 +39,30 @@ public class Vector2Graph<NodeType> : IGraph<NodeType>, IDistance<NodeType>
             NodeTravelType nodeTravelType = (NodeTravelType)range;
             node.SetNodeType(nodeTravelType);
             node.SetWeight(range);
+            switch (nodeTravelType)
+            {
+                case NodeTravelType.Mine:
+                  node.SetPlace(new Mine());
+                    break;
+                case NodeTravelType.HumanCenter:
+                  node.SetPlace(new HumanCenter());
+                    break;
+                case NodeTravelType.Grass:
+                    break;
+                case NodeTravelType.Rocks:
+                    break;
+                case NodeTravelType.Water:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
             if (nodeTravelType == NodeTravelType.Water)
             {
                 node.SetBlocked();
             }
         }
     }
+    
 
     private void SetCardinalConnections(int x, int y)
     {
