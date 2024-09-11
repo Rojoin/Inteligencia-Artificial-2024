@@ -47,10 +47,10 @@ public class FSM<EnumState, EnumFlag> where EnumState : Enum where EnumFlag : En
     {
         if (transitions[currentState, Convert.ToInt32(flag)].destinationState != UNNASSIGNED_TRASNSITION)
         {
-            ExecuteBehaviour(GetCurrentStateOnEnterBehaviours);
+            ExecuteBehaviour(GetCurrentStateOnExitBehaviours);
             transitions[currentState, Convert.ToInt32(flag)].onTransitions?.Invoke();
             currentState = transitions[currentState, Convert.ToInt32(flag)].destinationState;
-            ExecuteBehaviour(GetCurrentStateOnExitBehaviours);
+            ExecuteBehaviour(GetCurrentStateOnEnterBehaviours);
         }
     }
 

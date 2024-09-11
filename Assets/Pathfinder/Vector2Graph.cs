@@ -29,6 +29,7 @@ public class Vector2Graph<NodeType> : IGraph<NodeType>, IDistance<NodeType>
 
         SetCardinalConnections(x, y);
         SetRandomType();
+        SetRandomHumanCenter();
     }
 
     private void SetRandomType()
@@ -41,12 +42,6 @@ public class Vector2Graph<NodeType> : IGraph<NodeType>, IDistance<NodeType>
             node.SetWeight(range);
             switch (nodeTravelType)
             {
-                case NodeTravelType.Mine:
-                  node.SetPlace(new Mine());
-                    break;
-                case NodeTravelType.HumanCenter:
-                  node.SetPlace(new HumanCenter());
-                    break;
                 case NodeTravelType.Grass:
                     break;
                 case NodeTravelType.Rocks:
@@ -54,15 +49,32 @@ public class Vector2Graph<NodeType> : IGraph<NodeType>, IDistance<NodeType>
                 case NodeTravelType.Water:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                   nodeTravelType = NodeTravelType.Grass;
+                   node.SetNodeType(nodeTravelType);
+                   node.SetWeight(1);
+                   break;
             }
+
             if (nodeTravelType == NodeTravelType.Water)
             {
                 node.SetBlocked();
             }
         }
     }
-    
+
+    private void SetRandomHumanCenter()
+    {
+        
+        nodes[0].SetNodeType(NodeTravelType.HumanCenter);
+        nodes[0].SetWeight(0);
+        nodes[0].SetPlace(new HumanCenter());
+
+        nodes[^1].SetNodeType(NodeTravelType.Mine);
+        nodes[^1].SetWeight(0);
+        nodes[^1].SetPlace(new Mine());
+        
+    }
+
 
     private void SetCardinalConnections(int x, int y)
     {

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using Miner;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -17,65 +19,123 @@ public enum Flags
     OnTargetLost
 }
 
-public class Agent : MonoBehaviour
+public class Agent : MonoBehaviour, ITraveler
 {
-    private FSM<MinerStates,MinerFlags> fsm;
+    private FSM<MinerStates, MinerFlags> fsm;
     public Transform[] waypoints;
     public Transform chaseTarget;
-    [SerializeField] private float speed { get; set; }
+    [SerializeField] private float speed = 10;
     [SerializeField] private float chaseDistance = 0.2f;
     [SerializeField] private float explodeDistance;
     [SerializeField] private float lostDistance;
 
+    private int gold = 0;
+    private int energy = 3;
+    private int maxGold = 15;
+    private float timeBetweenGold = 1.0f;
+    public BoidAgent boid;
+
+    public List<Node<Vector2>> path;
+
+    private Node<Vector2> startNode;
+    private Node<Vector2> destinationNode;
+    private Coroutine startPathFinding;
+
+    public GrapfView grafp;
+    private AStarPathfinder<Node<Vector2>, Vector2> Pathfinder =
+        new AStarPathfinder<Node<Vector2>, Vector2>();
+
+    private void OnEnable()
+    {
+        if (startPathFinding != null)
+        {
+            StopCoroutine(startPathFinding);
+        }
+
+        startPathFinding = StartCoroutine(StartVillager());
+    }
+
+    public IEnumerator StartVillager()
+    {
+        yield return null;
+        startNode = grafp.graph.nodes[0];
+        destinationNode = grafp.graph.nodes[^1];
+
+        path = Pathfinder.FindPath(startNode, destinationNode, grafp.graph, this);
+
+        fsm = new FSM<MinerStates, MinerFlags>();
+
+        Action<int> setGold;
+        Action<int> setEnergy;
+
+        //Tuple.Create( getFloat = () => speed,setFloat = value => speed = value)
+
+        fsm.AddBehaviour<IdleState>(MinerStates.Idle, onTickParametes: () => new object[]
+        {
+            setEnergy = a => energy = a, path[^1].GetPlace()
+        });
+        fsm.AddBehaviour<MiningState>(MinerStates.Mining, onTickParametes: () => new object[]
+        {
+            gold, maxGold, energy, Time.deltaTime, timeBetweenGold,
+            setGold = value => gold = value,
+            setEnergy = a => energy = a,
+        }, onEnterParametes: () => new object[]
+        {
+            path[^1].GetPlace()
+        });
+        fsm.AddBehaviour<TravelState>(MinerStates.Travel, onTickParametes: () => new object[]
+        {
+            this.transform, path, transform.up * 2, speed, chaseDistance
+        });
+
+        fsm.SetTransition(MinerStates.Travel, MinerFlags.OnStartMining, MinerStates.Mining);
+        fsm.SetTransition(MinerStates.Travel, MinerFlags.OnWaitingOnCenter, MinerStates.Idle);
+        fsm.SetTransition(MinerStates.Idle, MinerFlags.OnStartMining, MinerStates.Mining);
+        fsm.SetTransition(MinerStates.Mining, MinerFlags.OnGoingToCenter, MinerStates.Travel,
+            () => { path.Reverse(); });
+        fsm.SetTransition(MinerStates.Mining, MinerFlags.OnEmptyEnergy, MinerStates.Idle);
+
+        fsm.ForceState(MinerStates.Travel);
+    }
 
     void Start()
     {
         int stateCount = 0;
-        fsm = new FSM<MinerStates,MinerFlags> ();
-        Func<float> getFloat;
-        Action<float> setFloat;
-     //   fsm.AddBehaviour<PatrolState>(Behaviour.Patrol,onTickParametes: () => new object[]
-     //   {
-     //       this.transform,waypoints[0],waypoints[1],chaseTarget, speed,chaseDistance, Tuple.Create( getFloat = () => speed,setFloat = value => speed = value)
-     //   });
-     //   fsm.AddBehaviour<ChaseState>(Behaviour.Chase,onTickParametes: () => new object[] {this.transform,chaseTarget, speed,explodeDistance,lostDistance});
-     //   fsm.AddBehaviour<ExplodeState>(Behaviour.Explode);
-     //  
-     //  fsm.SetTransition(Behaviour.Patrol,Flags.OnTargetNear,Behaviour.Chase);
-     //  fsm.SetTransition(Behaviour.Chase,Flags.OnTargetReach,Behaviour.Explode);
-     //  fsm.SetTransition(Behaviour.Chase,Flags.OnTargetLost,Behaviour.Patrol);
-    //    fsm.ForceState(Behaviour.Patrol);
-        
-        
-        fsm.AddBehaviour<IdleState>(Miner.MinerStates.Travel,onTickParametes: ()=> new object[]
-        {
-            
-        });
-        fsm.AddBehaviour<MiningState>(Miner.MinerStates.Travel,onTickParametes: ()=> new object[]
-        {
-            
-        });
-        fsm.AddBehaviour<TravelState>(Miner.MinerStates.Travel,onTickParametes: ()=> new object[]
-        {
-            
-        });
     }
 
     private void Update()
     {
-        fsm.Tick();
+        fsm?.Tick();
     }
 
     private void OnDrawGizmos()
     {
         if (Application.isPlaying)
         {
-           Gizmos.color = Color.green;
-           Gizmos.DrawWireSphere(transform.position,chaseDistance);
-           Gizmos.color = Color.blue;
-           Gizmos.DrawWireSphere(transform.position,lostDistance);
-           Gizmos.color = Color.red;
-           Gizmos.DrawWireSphere(transform.position,explodeDistance);
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(transform.position, chaseDistance);
+            Gizmos.color = Color.blue;
+            Gizmos.DrawWireSphere(transform.position, lostDistance);
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, explodeDistance);
         }
+    }
+
+    public virtual bool CanTravelNode(NodeTravelType type)
+    {
+        return true;
+    }
+
+    public float GetNodeCostToTravel(NodeTravelType type)
+    {
+        return type switch
+        {
+            NodeTravelType.Mine => 0,
+            NodeTravelType.HumanCenter => 0,
+            NodeTravelType.Grass => 1,
+            NodeTravelType.Rocks => 2,
+            NodeTravelType.Water => 10,
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
     }
 }

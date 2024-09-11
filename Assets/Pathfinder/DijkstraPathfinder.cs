@@ -23,6 +23,13 @@ public class DijkstraPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coo
         return neighborsList;
     }
 
+    protected override float MoveToNeighborCost(NodeType A, NodeType b)
+    {
+        return useManhattan
+            ? graph.GetManhattanDistance(A, b)
+            : graph.GetEuclideanDistance(A, b);
+    }
+
     protected override bool IsBloqued(NodeType node)
     {
         return node.IsBlocked();

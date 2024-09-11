@@ -6,7 +6,7 @@ public class BreadthPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coor
 {
     protected override float Distance(NodeType A, NodeType B)
     {
-        throw new NotImplementedException();
+        return 0;
     }
 
     protected override ICollection<NodeType> GetNeighbors(NodeType node)
@@ -22,6 +22,11 @@ public class BreadthPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coor
         return neighborsList;
     }
 
+    protected override float MoveToNeighborCost(NodeType A, NodeType b)
+    {
+        return 0;
+    }
+
     protected override bool IsBloqued(NodeType node)
     {
        return node.IsBlocked();
@@ -29,7 +34,7 @@ public class BreadthPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coor
 
     protected override bool IsImpassable(NodeType node, ITraveler traveler)
     {
-        throw new NotImplementedException();
+        return false;
     }
 
     protected override float MoveToNeighborCost(NodeType A, NodeType b, ITraveler iTraveler)

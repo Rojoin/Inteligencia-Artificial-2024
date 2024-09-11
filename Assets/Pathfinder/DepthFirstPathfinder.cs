@@ -20,6 +20,11 @@ public class DepthFirstPathfinder<NodeType,Coordinate> : Pathfinder<NodeType,Coo
         return neighborsList;
     }
 
+    protected override float MoveToNeighborCost(NodeType A, NodeType b)
+    {
+        return 0;
+    }
+
     protected override bool IsBloqued(NodeType node)
     {
         return node.IsBlocked();

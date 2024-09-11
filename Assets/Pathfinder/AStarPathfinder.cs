@@ -25,6 +25,11 @@ public class AStarPathfinder<NodeType, Coordinate> : Pathfinder<NodeType, Coordi
         return neighborsList;
     }
 
+    protected override float MoveToNeighborCost(NodeType A, NodeType b)
+    {
+        return Distance(A, b) + b.GetWeight();
+    }
+
     protected override bool IsBloqued(NodeType node)
     {
         return node.IsBlocked();

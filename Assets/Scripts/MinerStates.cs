@@ -10,37 +10,63 @@ namespace Miner
         OnStartMining,
         OnGoingToMine,
         OnGoingToCenter,
+        OnWaitingOnCenter,
+        OnAlarmSound,
         OnAlarmResume
     }
+
     public enum MinerStates
     {
         Idle,
         Mining,
         Travel
     }
+
     public class IdleState : State
     {
         private Mine mine;
 
         public override BehaviourActions GetTickBehaviours(params object[] parameters)
         {
-            return default;
-        }
-
-        public override BehaviourActions GetEnterBehaviours(params object[] parameters)
-        {
-            int energy = (int)parameters[0];
-            mine = parameters[1] as Mine;
+            Action<int> energy = parameters[0] as Action<int>;
+            var place = parameters[1] as IPlace;
 
             BehaviourActions behaviour = new BehaviourActions();
             behaviour.SetTransitionBehavior(() =>
             {
-                if (mine.TryGetFood())
+                if (place is Mine mine1)
                 {
-                    OnFlag.Invoke(MinerFlags.OnStartMining);
+                    mine = mine1;
+                    if (mine.TryGetFood())
+                    {
+                        int energyToGet = 3;
+                        energy.Invoke(energyToGet);
+                        OnFlag.Invoke(MinerFlags.OnStartMining);
+                    }
                 }
             });
             return behaviour;
+        }
+
+        public override BehaviourActions GetEnterBehaviours(params object[] parameters)
+        {
+            // int energy = (int)parameters[0];
+            // var place = parameters[1] as IPlace;
+            //
+            // BehaviourActions behaviour = new BehaviourActions();
+            // behaviour.SetTransitionBehavior(() =>
+            // {
+            //     if (place is Mine mine1)
+            //     {
+            //         mine = mine1;
+            //         if (mine.TryGetFood())
+            //         {
+            //             OnFlag.Invoke(MinerFlags.OnStartMining);
+            //         }
+            //     }
+            // });
+            // return behaviour;
+            return default;
         }
 
         public override BehaviourActions GetExitBehaviours(params object[] parameters)
@@ -63,6 +89,8 @@ namespace Miner
             energy = (int)parameters[2];
             float deltaTime = (float)parameters[3];
             float timeBetweenGold = (float)parameters[4];
+            Action<int> setGold = parameters[5] as Action<int>;
+            Action<int> setEnergy = parameters[6] as Action<int>;
 
 
             BehaviourActions behaviour = new BehaviourActions();
@@ -73,8 +101,10 @@ namespace Miner
                 {
                     timer -= timeBetweenGold;
                     energy--;
+                    setEnergy.Invoke(energy);
                     mine.TryGetGold();
                     gold++;
+                    setGold.Invoke(gold);
                 }
             });
 
@@ -84,13 +114,11 @@ namespace Miner
                 {
                     OnFlag.Invoke(MinerFlags.OnGoingToCenter);
                 }
-
-                if (!mine.hasGold)
+                else if (!mine.hasGold)
                 {
                     OnFlag.Invoke(MinerFlags.OnGoingToMine);
                 }
-
-                if (energy <= 0)
+                else if (energy <= 0)
                 {
                     OnFlag.Invoke(MinerFlags.OnEmptyEnergy);
                 }
@@ -100,13 +128,13 @@ namespace Miner
 
         public override BehaviourActions GetEnterBehaviours(params object[] parameters)
         {
-            Mine mine = parameters[0] as Mine;
+            mine = parameters[0] as Mine;
             return default;
         }
 
         public override BehaviourActions GetExitBehaviours(params object[] parameters)
         {
-            throw new NotImplementedException();
+            return default;
         }
     }
 
@@ -126,27 +154,48 @@ namespace Miner
 
             Vector3 ownerTransformPosition = OwnerTransform.position;
             Vector3 actualTargetPosition = path[pathCounter].GetCoordinate();
-            behaviour.AddMultiThreadBehaviour(0, (() =>
-            {
-                if (Vector3.Distance(ownerTransformPosition, actualTargetPosition) < distanceToNode)
-                {
-                    pathCounter++;
-                }
-            }));
-            behaviour.AddMainThreadBehaviour(1, () =>
-                {
-                    OwnerTransform.forward = Vector3.Lerp(OwnerTransform.forward, direction, 1);
-                    OwnerTransform.position += OwnerTransform.forward * speed * Time.deltaTime;
-                }
+            actualTargetPosition.z = ownerTransformPosition.z;
+            behaviour.AddMultiThreadBehaviour(0, CalculateDistance());
+
+
+            behaviour.AddMainThreadBehaviour(1, Move
             );
             behaviour.SetTransitionBehavior(() =>
             {
                 if (Vector3.Distance(ownerTransformPosition, path[^1].GetCoordinate()) < distanceToNode)
                 {
-                   OnFlag.Invoke(MinerFlags.OnStartMining);
+                    if (path[^1].GetPlace() is Mine)
+                    {
+                        OnFlag.Invoke(MinerFlags.OnStartMining);
+                    }
+
+//Todo: Make center work
+                    if (path[^1].GetPlace() is HumanCenter)
+                    {
+                        OnFlag.Invoke(MinerFlags.OnWaitingOnCenter);
+                    }
                 }
             });
             return behaviour;
+
+            Action CalculateDistance()
+            {
+                return () =>
+                {
+                    if (Vector3.Distance(ownerTransformPosition, actualTargetPosition) < distanceToNode && pathCounter+1 < path.Count)
+                    {
+                        pathCounter++;
+                    }
+                };
+            }
+
+            void Move()
+            {
+                Vector3 dir = actualTargetPosition - ownerTransformPosition;
+                dir.Normalize();
+                OwnerTransform.right = dir;
+                OwnerTransform.position += dir * speed * Time.deltaTime;
+            }
         }
 
         public override BehaviourActions GetEnterBehaviours(params object[] parameters)
