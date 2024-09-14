@@ -1,14 +1,46 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
-public class HumanCenter : IPlace
+
+public abstract class HumanCenterBase
 {
+}
+
+public class HumanCenter<NodeType, Coordinate> : HumanCenterBase, IPlace where NodeType : class, INode<Coordinate>
+{
+    private NodeType currentNode;
     private List<Villager> _villagers = new List<Villager>();
-    
+    private IGraph<NodeType> graph;
+    private AStarPathfinder<NodeType, Coordinate> a = new AStarPathfinder<NodeType, Coordinate>();
+    private List<NodeType> goldMines = new List<NodeType>();
+
+    public void SetGraph(IGraph<NodeType> graph)
+    {
+        this.graph = graph;
+    }
+
+    public void AddGoldNode(NodeType node)
+    {
+        goldMines.Add(node);
+    }
+
+    public void SetNode(NodeType node)
+    {
+        currentNode = node;
+    }
+
     public void SpawnVillager()
     {
-
     }
+
     public void ActionOnPlace()
     {
     }
+
+    public List<NodeType> GetNewDestination(ITraveler traveler)
+    {
+        List<NodeType> newDestination = a.FindPath(currentNode, goldMines[0], graph, traveler);
+        return newDestination;
+    }
+    
 }

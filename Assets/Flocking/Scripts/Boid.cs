@@ -24,12 +24,12 @@ public class Boid : MonoBehaviour
         this.Direction = Direction;
     }
 
-    private void Update()
-    {
-       // transform.LookAt(ACS());
-        transform.forward = Vector3.Lerp(transform.forward, ACS(), 1);
-        transform.position += transform.forward * speed * Time.deltaTime;
-    }
+    // private void Update()
+    // {
+    //    // transform.LookAt(ACS());
+    //     transform.forward = Vector3.Lerp(transform.forward, ACS(), 1);
+    //     transform.position += transform.forward * speed * Time.deltaTime;
+    // }
 
     public Vector3 ACS()
     {

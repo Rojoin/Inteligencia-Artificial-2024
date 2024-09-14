@@ -132,8 +132,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5844532}
-  - component: {fileID: 5844530}
   - component: {fileID: 5844529}
+  - component: {fileID: 5844533}
   m_Layer: 0
   m_Name: Villager
   m_TagString: Untagged
@@ -193,19 +193,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &5844530
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5844528}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fd78a7fa7d404611af26e0dbc6dfda0b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  grafp: {fileID: 815766764}
 --- !u!4 &5844532
 Transform:
   m_ObjectHideFlags: 0
@@ -221,6 +208,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5844533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5844528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f8cad360ed54e618c60d3bfa8cc9463, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 10
+  chaseDistance: 0.2
+  path: []
+  grafp: {fileID: 815766764}
 --- !u!1 &31547548
 GameObject:
   m_ObjectHideFlags: 0
@@ -342,7 +345,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9505ac3f90de150418590939da61c3e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  grapf:
+  graph:
     nodes: []
   grass: {fileID: -258502911, guid: aa72e6bfc121a574e8e6555f9d086b57, type: 3}
   rock: {fileID: 1959538934, guid: aa72e6bfc121a574e8e6555f9d086b57, type: 3}
@@ -352,6 +355,7 @@ MonoBehaviour:
   tile: {fileID: 1302279718}
   nodesX: 10
   nodesY: 10
+  offset: 3
 --- !u!4 &815766765
 Transform:
   m_ObjectHideFlags: 0

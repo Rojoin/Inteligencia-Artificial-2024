@@ -24,24 +24,36 @@ namespace Miner
 
     public class IdleState : State
     {
-        private Mine mine;
+        private IPlace place;
+        private bool isAlarmOn = false;
 
         public override BehaviourActions GetTickBehaviours(params object[] parameters)
         {
             Action<int> energy = parameters[0] as Action<int>;
-            var place = parameters[1] as IPlace;
+            place = parameters[1] as IPlace;
+            List<Node<Vector2>> path = parameters[2] as List<Node<Vector2>>;
+            var traveler = parameters[3] as ITraveler;
+            Action<List<Node<Vector2>>> modifyPath = parameters[4] as Action<List<Node<Vector2>>>;
 
             BehaviourActions behaviour = new BehaviourActions();
             behaviour.SetTransitionBehavior(() =>
             {
-                if (place is Mine mine1)
+                if (place is Mine mine)
                 {
-                    mine = mine1;
                     if (mine.TryGetFood())
                     {
                         int energyToGet = 3;
                         energy.Invoke(energyToGet);
                         OnFlag.Invoke(MinerFlags.OnStartMining);
+                    }
+                }
+                else if (place is HumanCenter<Node<Vector2>, Vector2> humanCenter)
+                {
+                    if (!isAlarmOn)
+                    {
+                        path = humanCenter.GetNewDestination(traveler);
+                        modifyPath.Invoke(path);
+                        OnFlag.Invoke(MinerFlags.OnGoingToMine);
                     }
                 }
             });
@@ -50,22 +62,6 @@ namespace Miner
 
         public override BehaviourActions GetEnterBehaviours(params object[] parameters)
         {
-            // int energy = (int)parameters[0];
-            // var place = parameters[1] as IPlace;
-            //
-            // BehaviourActions behaviour = new BehaviourActions();
-            // behaviour.SetTransitionBehavior(() =>
-            // {
-            //     if (place is Mine mine1)
-            //     {
-            //         mine = mine1;
-            //         if (mine.TryGetFood())
-            //         {
-            //             OnFlag.Invoke(MinerFlags.OnStartMining);
-            //         }
-            //     }
-            // });
-            // return behaviour;
             return default;
         }
 
@@ -78,6 +74,7 @@ namespace Miner
     public class MiningState : State
     {
         private int gold;
+        private int currentGold = 0;
         private int energy;
         private float timer = 0;
         private Mine mine;
@@ -97,14 +94,18 @@ namespace Miner
             behaviour.AddMultiThreadBehaviour(0, () =>
             {
                 timer += deltaTime;
-                if (timer > timeBetweenGold && energy > 0 && mine.hasGold)
+                if (timer > timeBetweenGold && energy > 0 && mine.TryGetGold())
                 {
                     timer -= timeBetweenGold;
-                    energy--;
-                    setEnergy.Invoke(energy);
-                    mine.TryGetGold();
                     gold++;
                     setGold.Invoke(gold);
+                    currentGold++;
+                    if (currentGold == 3)
+                    {
+                        energy--;
+                        setEnergy.Invoke(energy);
+                        currentGold = 0;
+                    }
                 }
             });
 
@@ -129,6 +130,7 @@ namespace Miner
         public override BehaviourActions GetEnterBehaviours(params object[] parameters)
         {
             mine = parameters[0] as Mine;
+
             return default;
         }
 
@@ -170,7 +172,7 @@ namespace Miner
                     }
 
 //Todo: Make center work
-                    if (path[^1].GetPlace() is HumanCenter)
+                    if (path[^1].GetPlace() is HumanCenterBase)
                     {
                         OnFlag.Invoke(MinerFlags.OnWaitingOnCenter);
                     }
@@ -182,7 +184,8 @@ namespace Miner
             {
                 return () =>
                 {
-                    if (Vector3.Distance(ownerTransformPosition, actualTargetPosition) < distanceToNode && pathCounter+1 < path.Count)
+                    if (Vector3.Distance(ownerTransformPosition, actualTargetPosition) < distanceToNode &&
+                        pathCounter + 1 < path.Count)
                     {
                         pathCounter++;
                     }

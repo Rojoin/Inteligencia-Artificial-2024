@@ -32,7 +32,7 @@ public class Villager : MonoBehaviour, ITraveler
         destinationNode = grafp.graph.nodes[^1];
 
         List<Node<Vector2>> path = Pathfinder.FindPath(startNode, destinationNode, grafp.graph, this);
-        //StartCoroutine(Move(path));
+     
     }
 
     public IEnumerator Move(List<Node<Vector2>> path)

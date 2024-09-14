@@ -5,7 +5,7 @@ using Random = UnityEngine.Random;
 
 [Serializable]
 public class Vector2Graph<NodeType> : IGraph<NodeType>, IDistance<NodeType>
-    where NodeType : INode<UnityEngine.Vector2>, INode, new()
+    where NodeType :class, INode<UnityEngine.Vector2>, INode, new()
 {
     public List<NodeType> nodes = new List<NodeType>();
     public NodeType[,] nodesMatrix;
@@ -67,11 +67,16 @@ public class Vector2Graph<NodeType> : IGraph<NodeType>, IDistance<NodeType>
         
         nodes[0].SetNodeType(NodeTravelType.HumanCenter);
         nodes[0].SetWeight(0);
-        nodes[0].SetPlace(new HumanCenter());
+        nodes[0].SetPlace(new HumanCenter<NodeType,UnityEngine.Vector2>());
+        HumanCenter<NodeType,Vector2> humanCenter = (HumanCenter<NodeType,UnityEngine.Vector2>)nodes[0].GetPlace();
+        humanCenter.SetGraph(this);
+        humanCenter.SetNode(nodes[0]);
+        
 
         nodes[^1].SetNodeType(NodeTravelType.Mine);
         nodes[^1].SetWeight(0);
         nodes[^1].SetPlace(new Mine());
+        humanCenter.AddGoldNode(nodes[^1]);
         
     }
 
