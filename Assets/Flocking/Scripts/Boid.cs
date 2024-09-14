@@ -38,6 +38,7 @@ public class Boid : MonoBehaviour
         return ACS.normalized;
     }
 }
+[Serializable]
 public class BoidAgent
 {
     public float speed = 2.5f;
@@ -45,6 +46,8 @@ public class BoidAgent
     public float aligmentWeight = 1;
     public float cohesionWeight = 1.5f;
     public float separationWeight = 2;
+    public Transform parent;
+    public Vector3 objective;
     private Func<BoidAgent, Vector3> Alignment;
     private Func<BoidAgent, Vector3> Cohesion;
     private Func<BoidAgent, Vector3> Separation;
@@ -60,10 +63,13 @@ public class BoidAgent
         this.Separation = Separation;
         this.Direction = Direction;
     }
+
     public Vector3 ACS()
     {
         Vector3 ACS = Alignment(this) * aligmentWeight + Cohesion(this) * cohesionWeight +
                       Separation(this) * separationWeight + Direction(this);
-        return ACS.normalized;
+
+        return new Vector2(ACS.x, ACS.y).normalized;
+        ;
     }
 }

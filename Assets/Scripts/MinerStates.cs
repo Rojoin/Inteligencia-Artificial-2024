@@ -34,7 +34,7 @@ namespace Miner
             List<Node<Vector2>> path = parameters[2] as List<Node<Vector2>>;
             var traveler = parameters[3] as ITraveler;
             Action<List<Node<Vector2>>> modifyPath = parameters[4] as Action<List<Node<Vector2>>>;
-
+            Action<Vector3> setDestination = parameters[5] as Action<Vector3>;
             BehaviourActions behaviour = new BehaviourActions();
             behaviour.SetTransitionBehavior(() =>
             {
@@ -52,6 +52,7 @@ namespace Miner
                     if (!isAlarmOn)
                     {
                         path = humanCenter.GetNewDestination(traveler);
+                        setDestination(path[0].GetCoordinate());
                         modifyPath.Invoke(path);
                         OnFlag.Invoke(MinerFlags.OnGoingToMine);
                     }
@@ -62,6 +63,7 @@ namespace Miner
 
         public override BehaviourActions GetEnterBehaviours(params object[] parameters)
         {
+            
             return default;
         }
 
@@ -88,7 +90,7 @@ namespace Miner
             float timeBetweenGold = (float)parameters[4];
             Action<int> setGold = parameters[5] as Action<int>;
             Action<int> setEnergy = parameters[6] as Action<int>;
-
+        
 
             BehaviourActions behaviour = new BehaviourActions();
             behaviour.AddMultiThreadBehaviour(0, () =>
@@ -150,7 +152,9 @@ namespace Miner
             List<Node<Vector2>> path = parameters[1] as List<Node<Vector2>>;
             Vector3 direction = (Vector3)parameters[2];
             float speed = Convert.ToSingle(parameters[3]);
-            float distanceToNode = Convert.ToSingle(parameters[4]);
+            float distanceToNode = Convert.ToSingle(parameters[4]);    
+            Action<Vector3> setDestination = parameters[5] as Action<Vector3>;
+   
             BehaviourActions behaviour = new BehaviourActions();
 
 
@@ -188,22 +192,24 @@ namespace Miner
                         pathCounter + 1 < path.Count)
                     {
                         pathCounter++;
+                        setDestination.Invoke(path[pathCounter].GetCoordinate());
                     }
                 };
             }
 
             void Move()
             {
-                Vector3 dir = actualTargetPosition - ownerTransformPosition;
-                dir.Normalize();
-                OwnerTransform.right = dir;
-                OwnerTransform.position += dir * speed * Time.deltaTime;
+                OwnerTransform.right = direction;
+                OwnerTransform.position += direction * speed * Time.deltaTime;
             }
         }
 
         public override BehaviourActions GetEnterBehaviours(params object[] parameters)
         {
+            Action<Vector3> setDestination = parameters[0] as Action<Vector3>;
+            List<Node<Vector2>> path = parameters[1] as List<Node<Vector2>>;
             pathCounter = 0;
+            setDestination.Invoke(path[pathCounter].GetCoordinate());
             return default;
         }
 

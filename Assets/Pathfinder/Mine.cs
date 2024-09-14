@@ -1,6 +1,6 @@
 ﻿public class Mine : IPlace
 {
-    private int gold = 30;
+    private int gold = 50;
     private int food = 15;
 
     public bool TryGetFood()

@@ -171,7 +171,7 @@ public abstract class Pathfinder<NodeType, Coordinate> where NodeType : INode<Co
                 path.Add(currentNode);
                 currentNode = nodes[currentNode].Parent;
             }
-
+path.Add(startNode);
             path.Reverse();
             return path;
         }
