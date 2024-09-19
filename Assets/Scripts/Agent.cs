@@ -22,8 +22,7 @@ public enum Flags
 public class Agent : MonoBehaviour, ITraveler
 {
     private FSM<MinerStates, MinerFlags> fsm;
-
-    [SerializeField] private float speed = 10;
+    
     [SerializeField] private float chaseDistance = 0.2f;
 
     private int gold = 0;
@@ -33,21 +32,23 @@ public class Agent : MonoBehaviour, ITraveler
     public BoidAgent boid;
 
     public List<Node<Vector2>> path;
-    private IPlace currentPlace;
+    private Node<Vector2> currentNode;
+    private Node<Vector2> currentMine;
+    private Node<Vector2> currentObjective;
+    private Node<Vector2> humanCenterNode;
 
-//Todo: Make Boid Connection
+
+    public Action onAlarmRaised = () => {};
+    public Action onAlarmStop = () => {};
+
+
     private Node<Vector2> startNode;
-    private Node<Vector2> destinationNode;
     private Coroutine startPathFinding;
 
     public GrapfView grafp;
     private AStarPathfinder<Node<Vector2>, Vector2> Pathfinder =
         new AStarPathfinder<Node<Vector2>, Vector2>();
 
-    public void SetCurrentPLace(IPlace place)
-    {
-        currentPlace = place;
-    }
 
     private void OnEnable()
     {
@@ -69,18 +70,23 @@ public class Agent : MonoBehaviour, ITraveler
         yield return null;
         yield return null;
         startNode = grafp.graph.nodes[0];
-        destinationNode = grafp.graph.nodes[^1];
+        humanCenterNode = startNode;
         boid.objective = grafp.graph.nodes[^1].GetCoordinate();
-
+        PathFinderManager<Node<Vector2>, Vector2>.graph = grafp.graph;
         //path = Pathfinder.FindPath(startNode, destinationNode, grafp.graph, this);
         //Todo: Make a way to give the current place for the first time
-        currentPlace = startNode.GetPlace();
+        currentNode = startNode;
         fsm = new FSM<MinerStates, MinerFlags>();
 
         Action<int> setGold;
         Action<int> setEnergy;
         Action<Vector3> setObjective;
         Action<List<Node<Vector2>>> setPath;
+        Action<Node<Vector2>> setDestinaction;
+        Action<Node<Vector2>> setNodeObjective;
+
+        Action<Action, bool> setAlarmOnDelegate;
+        Action<Action, bool> setAlarmOffDelegate;
 
         void SetObjective(Vector3 newObjective) => boid.objective = newObjective;
 
@@ -88,8 +94,8 @@ public class Agent : MonoBehaviour, ITraveler
         {
             return new object[]
             {
-                setEnergy = a => energy = a, currentPlace, path, this, setPath = list => path = list,
-                setObjective = SetObjective
+                setEnergy = a => energy = a, currentNode, path, this, setPath = list => path = list,
+                setObjective = SetObjective, setNodeObjective = node => currentObjective = node
             };
         });
         fsm.AddBehaviour<MiningState>(MinerStates.Mining, onTickParametes: () => new object[]
@@ -100,26 +106,38 @@ public class Agent : MonoBehaviour, ITraveler
             setObjective = SetObjective
         }, onEnterParametes: () => new object[]
         {
-            currentPlace
+            currentNode
         });
         fsm.AddBehaviour<TravelState>(MinerStates.Travel, onTickParametes: () => new object[]
             {
-                this.transform, path, boid.ACS(), speed, chaseDistance,
-                setObjective = SetObjective
+                this.transform, path, boid.ACS(), boid.speed, chaseDistance,
+                setObjective = SetObjective,
+                setPath = list => path = list,
+                setDestinaction = node => currentNode = node,
             },
             onEnterParametes: () => new object[]
             {
                 setObjective = SetObjective,
-                path
+                path,
+                setAlarmOnDelegate = HandlerToOnRaisedAlarm,
+                setAlarmOffDelegate = HandlerToOnStopAlarm,
+                humanCenterNode,
+                this,
+                currentObjective
+            }, onExitParametes: () => new object[]
+            {
+                setAlarmOnDelegate = HandlerToOnRaisedAlarm,
+                setAlarmOffDelegate = HandlerToOnStopAlarm
             });
 
         fsm.SetTransition(MinerStates.Travel, MinerFlags.OnStartMining, MinerStates.Mining);
         fsm.SetTransition(MinerStates.Travel, MinerFlags.OnWaitingOnCenter, MinerStates.Idle);
         fsm.SetTransition(MinerStates.Idle, MinerFlags.OnStartMining, MinerStates.Mining,
-            () => { currentPlace = path[^1].GetPlace(); });
+            () => { currentNode = path[^1]; });
         fsm.SetTransition(MinerStates.Mining, MinerFlags.OnGoingToCenter, MinerStates.Travel,
             () =>
             {
+                path = PathFinderManager<Node<Vector2>, Vector2>.GetPath(humanCenterNode, currentNode, this);
                 path.Reverse();
                 // boid.objective = path[^1].GetCoordinate();
             });
@@ -127,11 +145,35 @@ public class Agent : MonoBehaviour, ITraveler
         fsm.SetTransition(MinerStates.Idle, MinerFlags.OnGoingToMine, MinerStates.Travel,
             () =>
             {
-                currentPlace = path[^1].GetPlace();
+                currentNode = path[^1];
                 // boid.objective = path[^1].GetCoordinate();
             });
 
         fsm.ForceState(MinerStates.Idle);
+        yield break;
+
+        void HandlerToOnRaisedAlarm(Action actionToAdd, bool value)
+        {
+            if (value)
+            {
+                onAlarmRaised += actionToAdd;
+            }
+            else
+            {
+                onAlarmRaised -= actionToAdd;
+            }
+        }
+        void HandlerToOnStopAlarm(Action actionToAdd, bool value)
+        {
+            if (value)
+            {
+                onAlarmStop += actionToAdd;
+            }
+            else
+            {
+                onAlarmStop -= actionToAdd;
+            }
+        }
     }
 
 

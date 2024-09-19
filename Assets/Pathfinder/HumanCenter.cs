@@ -39,8 +39,7 @@ public class HumanCenter<NodeType, Coordinate> : HumanCenterBase, IPlace where N
 
     public List<NodeType> GetNewDestination(ITraveler traveler)
     {
-        List<NodeType> newDestination = a.FindPath(currentNode, goldMines[0], graph, traveler);
-        return newDestination;
+        //Todo:Change to grab vornoid GoldMine
+        return PathFinderManager<NodeType, Coordinate>.GetPath(currentNode, goldMines[0], traveler);
     }
-    
 }

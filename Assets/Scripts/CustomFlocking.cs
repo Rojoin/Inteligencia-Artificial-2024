@@ -13,7 +13,25 @@ public class CustomFlocking : MonoBehaviour
     public float aligmentWeight = 1;
     public float cohesionWeight = 1.5f;
     public float separationWeight = 2;
+    public float speed = 2;
+    
 
+    [ContextMenu("RaiseAlarm")]
+    public void RaiseAlarm()
+    {
+         foreach (Agent agent in agents)
+         {
+             agent.onAlarmRaised?.Invoke();
+         }
+    } 
+    [ContextMenu("StopAlarm")]
+    public void StopAlarm()
+    {
+        foreach (Agent agent in agents)
+        {
+            agent.onAlarmStop.Invoke();
+        }
+    }
     private void Start()
     {
         foreach (var VARIABLE in agents)
@@ -22,6 +40,18 @@ public class CustomFlocking : MonoBehaviour
             boid.Init(Alignment, Cohesion, Separation, Direction);
             SetBoidParams(boid);
             boids.Add(boid);
+            // VARIABLE.onAlarmRaised += RaiseAlarm;
+            // VARIABLE.onAlarmStop += StopAlarm;
+        }
+        
+    }
+
+    private void OnDisable()
+    {
+        foreach (var VARIABLE in agents)
+        {
+            // VARIABLE.onAlarmRaised -= RaiseAlarm;
+            // VARIABLE.onAlarmStop -= StopAlarm;
         }
     }
 
@@ -43,6 +73,7 @@ public class CustomFlocking : MonoBehaviour
         boid.aligmentWeight = aligmentWeight;
         boid.cohesionWeight = cohesionWeight;
         boid.separationWeight = separationWeight;
+        boid.speed = speed;
     }
 
     public Vector3 Alignment(BoidAgent boid)
