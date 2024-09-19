@@ -37,13 +37,19 @@ namespace Miner
             Action<List<Node<Vector2>>> modifyPath = parameters[4] as Action<List<Node<Vector2>>>;
             Action<Vector3> setDestination = parameters[5] as Action<Vector3>;
             Action<Node<Vector2>> setCurrentMine = parameters[6] as Action<Node<Vector2>>;
-
+            isAlarmOn = Convert.ToBoolean(parameters[7]);
+            var goldToRetrieve = parameters[8] as Action<int>;
             BehaviourActions behaviour = new BehaviourActions();
             behaviour.SetTransitionBehavior(() =>
             {
+              
                 if (place is Mine mine)
                 {
-                    if (mine.TryGetFood())
+                    if (isAlarmOn)
+                    {
+                        OnFlag.Invoke(MinerFlags.OnAlarmSound);
+                    }
+                    else if (mine.TryGetFood())
                     {
                         int energyToGet = 3;
                         energy.Invoke(energyToGet);
@@ -58,6 +64,7 @@ namespace Miner
                         setDestination(path[0].GetCoordinate());
                         modifyPath.Invoke(path);
                         setCurrentMine.Invoke(path[^1]);
+                        goldToRetrieve.Invoke(0);
                         OnFlag.Invoke(MinerFlags.OnGoingToMine);
                     }
                 }
@@ -67,12 +74,34 @@ namespace Miner
 
         public override BehaviourActions GetEnterBehaviours(params object[] parameters)
         {
+            var onAlarmStop = parameters[0] as Action<Action, bool>;
+            var onAlarmResume = parameters[1] as Action<Action, bool>;
+            changeAlarmState = parameters[2] as Action<bool>;
+            onAlarmStop.Invoke(OnAlarmStoped, true);
+            onAlarmResume.Invoke(OnAlarmRaise, true);
+
             return default;
         }
 
+            Action<bool> changeAlarmState;
         public override BehaviourActions GetExitBehaviours(params object[] parameters)
         {
+            var onAlarmStop = parameters[0] as Action<Action, bool>;
+            var onAlarmResume = parameters[1] as Action<Action, bool>;
+            onAlarmStop.Invoke(OnAlarmStoped, false);
+            onAlarmResume.Invoke(OnAlarmRaise, false);
             return default;
+        }
+
+        private void OnAlarmStoped()
+        {
+            isAlarmOn = false;
+            changeAlarmState.Invoke(isAlarmOn);
+        }
+        private void OnAlarmRaise()
+        {
+            isAlarmOn = false;
+            changeAlarmState.Invoke(isAlarmOn);
         }
     }
 
@@ -83,6 +112,7 @@ namespace Miner
         private int energy;
         private float timer = 0;
         private Mine mine;
+        private Node<Vector2> humanCenter;
 
         public override BehaviourActions GetTickBehaviours(params object[] parameters)
         {
@@ -127,6 +157,65 @@ namespace Miner
                 else if (energy <= 0)
                 {
                     OnFlag.Invoke(MinerFlags.OnEmptyEnergy);
+                }
+            });
+            return behaviour;
+        }
+
+        void OnAlarmRaised()
+        {
+            OnFlag.Invoke(MinerFlags.OnAlarmSound);
+            // List<Node<Vector2>> nodes =
+            //     PathFinderManager<Node<Vector2>, Vector2>.GetPath(humanCenter, path[pathCounter], _traveler);
+            // nodes.Reverse();
+            // modifyPath.Invoke(nodes);
+            // pathCounter = 0;
+            // setDestination.Invoke(nodes[pathCounter].GetCoordinate());
+        }
+
+        public override BehaviourActions GetEnterBehaviours(params object[] parameters)
+        {
+            mine = (parameters[0] as Node<Vector2>).GetPlace() as Mine;
+            humanCenter = parameters[1] as Node<Vector2>;
+            var onAlarmRaised = parameters[2] as Action<Action, bool>;
+            onAlarmRaised.Invoke(OnAlarmRaised, true);
+            return default;
+        }
+
+        public override BehaviourActions GetExitBehaviours(params object[] parameters)
+        {
+            var onAlarmRaised = parameters[0] as Action<Action, bool>;
+            onAlarmRaised.Invoke(OnAlarmRaised, false);
+            return default;
+        }
+    }
+
+    public class GivingFoodState : State
+    {
+        private int food;
+        private float timer = 0;
+        private Mine mine;
+
+        public override BehaviourActions GetTickBehaviours(params object[] parameters)
+        {
+            food = (int)parameters[0];
+            float deltaTime = (float)parameters[1];
+            float timeBetweenGold = (float)parameters[2];
+
+            BehaviourActions behaviour = new BehaviourActions();
+            behaviour.AddMultiThreadBehaviour(0, () =>
+            {
+                if (!mine.hasFood)
+                {
+                    mine.SetFood(food);
+                }
+            });
+
+            behaviour.SetTransitionBehavior(() =>
+            {
+                if (mine.hasFood)
+                {
+                    OnFlag.Invoke(MinerFlags.OnGoingToCenter);
                 }
             });
             return behaviour;
@@ -232,30 +321,17 @@ namespace Miner
             setDestination.Invoke(path[pathCounter].GetCoordinate());
             return default;
         }
-        
+
         void OnAlarmRaised()
         {
-            List<Node<Vector2>> nodes =
-                PathFinderManager<Node<Vector2>, Vector2>.GetPath(humanCenter, path[pathCounter], _traveler);
-            nodes.Reverse();
-            modifyPath.Invoke(nodes);
-            pathCounter = 0;
-            setDestination.Invoke(nodes[pathCounter].GetCoordinate());
-            
+            OnFlag.Invoke(MinerFlags.OnAlarmSound);
+
         }
 
         void OnAlarmStop()
         {
-            if (currentObjective.GetPlace() is Mine)
-            {
-                List<Node<Vector2>> nodes = PathFinderManager<Node<Vector2>, Vector2>.GetPath(currentObjective, path[pathCounter],_traveler);
-                nodes.Reverse();
-                modifyPath.Invoke(nodes);
-                pathCounter = 0;
-                setDestination.Invoke(nodes[pathCounter].GetCoordinate());
-            }
-
-            // setDestination.Invoke(path[pathCounter].GetCoordinate());
+            OnFlag.Invoke(MinerFlags.OnAlarmResume);
+       
         }
 
         public override BehaviourActions GetExitBehaviours(params object[] parameters)

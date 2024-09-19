@@ -22,7 +22,7 @@ public enum Flags
 public class Agent : MonoBehaviour, ITraveler
 {
     private FSM<MinerStates, MinerFlags> fsm;
-    
+
     [SerializeField] private float chaseDistance = 0.2f;
 
     private int gold = 0;
@@ -30,6 +30,7 @@ public class Agent : MonoBehaviour, ITraveler
     private int maxGold = 15;
     private float timeBetweenGold = 1.0f;
     public BoidAgent boid;
+    private bool isAlarmOn = false;
 
     public List<Node<Vector2>> path;
     private Node<Vector2> currentNode;
@@ -38,8 +39,8 @@ public class Agent : MonoBehaviour, ITraveler
     private Node<Vector2> humanCenterNode;
 
 
-    public Action onAlarmRaised = () => {};
-    public Action onAlarmStop = () => {};
+    public Action onAlarmRaised = () => { };
+    public Action onAlarmStop = () => { };
 
 
     private Node<Vector2> startNode;
@@ -80,6 +81,7 @@ public class Agent : MonoBehaviour, ITraveler
 
         Action<int> setGold;
         Action<int> setEnergy;
+        Action<bool> setAlarm;
         Action<Vector3> setObjective;
         Action<List<Node<Vector2>>> setPath;
         Action<Node<Vector2>> setDestinaction;
@@ -90,14 +92,26 @@ public class Agent : MonoBehaviour, ITraveler
 
         void SetObjective(Vector3 newObjective) => boid.objective = newObjective;
 
-        fsm.AddBehaviour<IdleState>(MinerStates.Idle, onTickParametes: () =>
-        {
-            return new object[]
+        fsm.AddBehaviour<IdleState>(MinerStates.Idle, onEnterParametes: () => new object[]
             {
-                setEnergy = a => energy = a, currentNode, path, this, setPath = list => path = list,
-                setObjective = SetObjective, setNodeObjective = node => currentObjective = node
-            };
-        });
+                setAlarmOffDelegate = HandlerToOnStopAlarm,
+                setAlarmOnDelegate = HandlerToOnRaisedAlarm,
+                setAlarm = value => isAlarmOn = value
+                
+            }, onTickParametes: () =>
+            {
+                return new object[]
+                {
+                    setEnergy = a => energy = a, currentNode, path, this, setPath = list => path = list,
+                    setObjective = SetObjective, setNodeObjective = node => currentObjective = node, isAlarmOn,
+                    setGold = g => gold = g
+                };
+            },
+            onExitParametes: () => new object[]
+            {
+                setAlarmOffDelegate = HandlerToOnStopAlarm,
+                setAlarmOnDelegate = HandlerToOnRaisedAlarm,
+            });
         fsm.AddBehaviour<MiningState>(MinerStates.Mining, onTickParametes: () => new object[]
         {
             gold, maxGold, energy, Time.deltaTime, timeBetweenGold,
@@ -106,7 +120,12 @@ public class Agent : MonoBehaviour, ITraveler
             setObjective = SetObjective
         }, onEnterParametes: () => new object[]
         {
-            currentNode
+            currentNode,
+            humanCenterNode,
+            setAlarmOnDelegate = HandlerToOnRaisedAlarm,
+        }, onExitParametes: () => new object[]
+        {
+            setAlarmOnDelegate = HandlerToOnRaisedAlarm,
         });
         fsm.AddBehaviour<TravelState>(MinerStates.Travel, onTickParametes: () => new object[]
             {
@@ -131,6 +150,25 @@ public class Agent : MonoBehaviour, ITraveler
             });
 
         fsm.SetTransition(MinerStates.Travel, MinerFlags.OnStartMining, MinerStates.Mining);
+        fsm.SetTransition(MinerStates.Travel, MinerFlags.OnAlarmSound, MinerStates.Travel,
+            () =>
+            {
+                path = PathFinderManager<Node<Vector2>, Vector2>.GetPath(humanCenterNode, currentNode, this);
+                path.Reverse();
+                SetObjective(path[0].GetCoordinate());
+                isAlarmOn = true;
+            });
+        fsm.SetTransition(MinerStates.Travel, MinerFlags.OnAlarmResume, MinerStates.Travel,
+            () =>
+            {
+                isAlarmOn = false;
+                if (currentObjective.GetPlace() is Mine)
+                {
+                    path = PathFinderManager<Node<Vector2>, Vector2>.GetPath(currentNode, currentObjective, this);
+                    //path.Reverse();
+                    SetObjective(path[0].GetCoordinate());
+                }
+            });
         fsm.SetTransition(MinerStates.Travel, MinerFlags.OnWaitingOnCenter, MinerStates.Idle);
         fsm.SetTransition(MinerStates.Idle, MinerFlags.OnStartMining, MinerStates.Mining,
             () => { currentNode = path[^1]; });
@@ -142,6 +180,20 @@ public class Agent : MonoBehaviour, ITraveler
                 // boid.objective = path[^1].GetCoordinate();
             });
         fsm.SetTransition(MinerStates.Mining, MinerFlags.OnEmptyEnergy, MinerStates.Idle);
+        fsm.SetTransition(MinerStates.Mining, MinerFlags.OnAlarmSound, MinerStates.Travel, () =>
+        {
+            path =
+                PathFinderManager<Node<Vector2>, Vector2>.GetPath(humanCenterNode, currentNode, this);
+            path.Reverse();
+            currentObjective = path[0];
+            isAlarmOn = true;
+        });
+        fsm.SetTransition(MinerStates.Idle, MinerFlags.OnGoingToMine, MinerStates.Travel,
+            () =>
+            {
+                currentNode = path[^1];
+                // boid.objective = path[^1].GetCoordinate();
+            });
         fsm.SetTransition(MinerStates.Idle, MinerFlags.OnGoingToMine, MinerStates.Travel,
             () =>
             {
@@ -163,6 +215,7 @@ public class Agent : MonoBehaviour, ITraveler
                 onAlarmRaised -= actionToAdd;
             }
         }
+
         void HandlerToOnStopAlarm(Action actionToAdd, bool value)
         {
             if (value)

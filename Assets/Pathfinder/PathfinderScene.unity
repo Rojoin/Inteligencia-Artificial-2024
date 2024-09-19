@@ -536,7 +536,7 @@ MonoBehaviour:
   aligmentWeight: 0.66
   cohesionWeight: 0.85
   separationWeight: 1.22
-  speed: 2
+  speed: 4.38
 --- !u!1 &855744213
 GameObject:
   m_ObjectHideFlags: 0

@@ -26,6 +26,7 @@
     }
 
     public bool hasGold => gold > 0;
+    public bool hasFood => food > 0;
 
     public void SetFood(int food) => this.food = food;
     public void ActionOnPlace()
