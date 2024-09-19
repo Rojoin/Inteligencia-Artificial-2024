@@ -8,3 +8,12 @@ public interface IPlace
 {
     public void ActionOnPlace();
 }
+public interface IFlock
+{
+    public BoidAgent GetBoid();
+}
+public interface IAlarmable
+{
+    public void InvokeAlarmOn();
+    public void InvokeAlarmOFf();
+}

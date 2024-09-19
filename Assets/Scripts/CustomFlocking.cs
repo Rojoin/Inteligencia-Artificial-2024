@@ -6,8 +6,8 @@ public class CustomFlocking : MonoBehaviour
 {
     public Transform target;
     // public int boidCount = 50;
-    public Boid boidPrefab;
-    public List<Agent> agents;
+    public List<GameObject> agents;
+    private List<IAlarmable> alarmables = new List<IAlarmable>();
     private List<BoidAgent> boids = new List<BoidAgent>();
     public float detectionRadious = 3.0f;
     public float aligmentWeight = 1;
@@ -19,24 +19,26 @@ public class CustomFlocking : MonoBehaviour
     [ContextMenu("RaiseAlarm")]
     public void RaiseAlarm()
     {
-         foreach (Agent agent in agents)
+         foreach (IAlarmable agent in alarmables)
          {
-             agent.onAlarmRaised?.Invoke();
+             agent.InvokeAlarmOn();
          }
     } 
     [ContextMenu("StopAlarm")]
     public void StopAlarm()
     {
-        foreach (Agent agent in agents)
+      
+        foreach (IAlarmable agent in alarmables)
         {
-            agent.onAlarmStop.Invoke();
+            agent.InvokeAlarmOFf();
         }
     }
     private void Start()
     {
-        foreach (var VARIABLE in agents)
+        foreach (var agent in agents)
         {
-            BoidAgent boid = VARIABLE.boid;
+            BoidAgent boid = agent.GetComponent<IFlock>().GetBoid();
+            alarmables.Add(agent.GetComponent<IAlarmable>());
             boid.Init(Alignment, Cohesion, Separation, Direction);
             SetBoidParams(boid);
             boids.Add(boid);
@@ -48,20 +50,16 @@ public class CustomFlocking : MonoBehaviour
 
     private void OnDisable()
     {
-        foreach (var VARIABLE in agents)
-        {
-            // VARIABLE.onAlarmRaised -= RaiseAlarm;
-            // VARIABLE.onAlarmStop -= StopAlarm;
-        }
+    
     }
 
     private void OnValidate()
     {
         if (Application.isPlaying)
         {
-            foreach (var VARIABLE in agents)
+            foreach (GameObject agent in agents)
             {
-                BoidAgent boid = VARIABLE.boid;
+                BoidAgent boid = agent.GetComponent<IFlock>().GetBoid();
                 SetBoidParams(boid);
             }
         }

@@ -12,6 +12,7 @@ public class GrapfView : MonoBehaviour
     [SerializeField] private Sprite mine;
     [SerializeField] private Sprite water;
     [SerializeField] private Sprite humanCenter;
+    private CaravanFazade _caravanFazade = new CaravanFazade();
     private List<GameObject> _tiles = new List<GameObject>();
     public GameObject tile;
     public int nodesX = 3;
@@ -29,7 +30,7 @@ public class GrapfView : MonoBehaviour
     {
         graph = new Vector2Graph<Node<Vector2>>(nodesX, nodesY,offset);
         AStarPathfinder<Node<Vector2>, Vector2> test = new AStarPathfinder<Node<Vector2>, Vector2>();
-        List<Node<Vector2>> findPath = test.FindPath(graph.nodes[0],graph.nodes[^1],graph);
+        List<Node<Vector2>> findPath = test.FindPath(graph.nodes[0],graph.nodes[^1],graph,_caravanFazade);
         if (findPath == null||findPath.Count < 0)
         {
             CreateGraph();
@@ -96,5 +97,25 @@ public class GrapfView : MonoBehaviour
         //         Gizmos.DrawLine(currentNodeCoordinate, nodePos);
         //     }
         // }
+    }
+}
+public class CaravanFazade : ITraveler
+{
+    public virtual bool CanTravelNode(NodeTravelType type)
+    {
+        return !(type == NodeTravelType.Rocks);
+    }
+
+    public float GetNodeCostToTravel(NodeTravelType type)
+    {
+        return type switch
+        {
+            NodeTravelType.Mine => 0,
+            NodeTravelType.HumanCenter => 0,
+            NodeTravelType.Grass => 2,
+            NodeTravelType.Rocks => 2,
+            NodeTravelType.Water => 5,
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
     }
 }

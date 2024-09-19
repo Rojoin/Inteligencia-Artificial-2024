@@ -4,17 +4,13 @@ using System.Collections.Generic;
 using Miner;
 using UnityEngine;
 
-
-public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
+public class Caravan : MonoBehaviour, ITraveler, IFlock,IAlarmable
 {
     private FSM<MinerStates, MinerFlags> fsm;
 
     [SerializeField] private float chaseDistance = 0.2f;
 
-    private int gold = 0;
-    private int energy = 3;
-    private int maxGold = 15;
-    private float timeBetweenGold = 1.0f;
+    private int food = 0;
     public BoidAgent boid;
     private bool isAlarmOn = false;
 
@@ -65,32 +61,28 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
         currentNode = startNode;
         fsm = new FSM<MinerStates, MinerFlags>();
 
-        Action<int> setGold;
-        Action<int> setEnergy;
+        Action<int> setFood;
         Action<bool> setAlarm;
         Action<Vector3> setObjective;
         Action<List<Node<Vector2>>> setPath;
         Action<Node<Vector2>> setDestinaction;
-        Action<Node<Vector2>> setNodeObjective;
 
         Action<Action, bool> setAlarmOnDelegate;
         Action<Action, bool> setAlarmOffDelegate;
 
         void SetObjective(Vector3 newObjective) => boid.objective = newObjective;
 
-        fsm.AddBehaviour<IdleState>(MinerStates.Idle, onEnterParametes: () => new object[]
+        fsm.AddBehaviour<IdleFoodState>(MinerStates.Idle, onEnterParametes: () => new object[]
             {
+                currentNode,
                 setAlarmOffDelegate = HandlerToOnStopAlarm,
                 setAlarmOnDelegate = HandlerToOnRaisedAlarm,
                 setAlarm = value => isAlarmOn = value
-                
             }, onTickParametes: () =>
             {
                 return new object[]
                 {
-                    setEnergy = a => energy = a, currentNode, path, this, setPath = list => path = list,
-                    setObjective = SetObjective, setNodeObjective = node => currentObjective = node, isAlarmOn,
-                    setGold = g => gold = g
+                    food, setFood = g => food = g, isAlarmOn
                 };
             },
             onExitParametes: () => new object[]
@@ -98,21 +90,6 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
                 setAlarmOffDelegate = HandlerToOnStopAlarm,
                 setAlarmOnDelegate = HandlerToOnRaisedAlarm,
             });
-        fsm.AddBehaviour<MiningState>(MinerStates.Mining, onTickParametes: () => new object[]
-        {
-            gold, maxGold, energy, Time.deltaTime, timeBetweenGold,
-            setGold = value => gold = value,
-            setEnergy = a => energy = a,
-            setObjective = SetObjective
-        }, onEnterParametes: () => new object[]
-        {
-            currentNode,
-            humanCenterNode,
-            setAlarmOnDelegate = HandlerToOnRaisedAlarm,
-        }, onExitParametes: () => new object[]
-        {
-            setAlarmOnDelegate = HandlerToOnRaisedAlarm,
-        });
         fsm.AddBehaviour<TravelState>(MinerStates.Travel, onTickParametes: () => new object[]
             {
                 this.transform, path, boid.ACS(), boid.speed, chaseDistance,
@@ -135,7 +112,6 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
                 setAlarmOffDelegate = HandlerToOnStopAlarm
             });
 
-        fsm.SetTransition(MinerStates.Travel, MinerFlags.OnStartMining, MinerStates.Mining);
         fsm.SetTransition(MinerStates.Travel, MinerFlags.OnAlarmSound, MinerStates.Travel,
             () =>
             {
@@ -156,17 +132,7 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
                 }
             });
         fsm.SetTransition(MinerStates.Travel, MinerFlags.OnWaitingOnCenter, MinerStates.Idle);
-        fsm.SetTransition(MinerStates.Idle, MinerFlags.OnStartMining, MinerStates.Mining,
-            () => { currentNode = path[^1]; });
-        fsm.SetTransition(MinerStates.Mining, MinerFlags.OnGoingToCenter, MinerStates.Travel,
-            () =>
-            {
-                path = PathFinderManager<Node<Vector2>, Vector2>.GetPath(humanCenterNode, currentNode, this);
-                path.Reverse();
-                // boid.objective = path[^1].GetCoordinate();
-            });
-        fsm.SetTransition(MinerStates.Mining, MinerFlags.OnEmptyEnergy, MinerStates.Idle);
-        fsm.SetTransition(MinerStates.Mining, MinerFlags.OnAlarmSound, MinerStates.Travel, () =>
+        fsm.SetTransition(MinerStates.Idle, MinerFlags.OnAlarmSound, MinerStates.Travel, () =>
         {
             path =
                 PathFinderManager<Node<Vector2>, Vector2>.GetPath(humanCenterNode, currentNode, this);
@@ -177,20 +143,18 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
         fsm.SetTransition(MinerStates.Idle, MinerFlags.OnGoingToMine, MinerStates.Travel,
             () =>
             {
+                path = (humanCenterNode.GetPlace() as HumanCenter<Node<Vector2>, Vector2>).GetNewDestination(this);
                 currentNode = path[^1];
-                // boid.objective = path[^1].GetCoordinate();
+                SetObjective(path[0].GetCoordinate());
+                food = 10;
+                currentObjective = path[^1];
             });
-        fsm.SetTransition(MinerStates.Idle, MinerFlags.OnGoingToMine, MinerStates.Travel,
-            () =>
-            {
-                currentNode = path[^1];
-                // boid.objective = path[^1].GetCoordinate();
-            });
+        fsm.SetTransition(MinerStates.Travel, MinerFlags.OnStartMining, MinerStates.Idle);
 
         fsm.ForceState(MinerStates.Idle);
         yield break;
 
-        void HandlerToOnRaisedAlarm(Action actionToAdd, bool value)
+      void HandlerToOnRaisedAlarm(Action actionToAdd, bool value)
         {
             if (value)
             {
@@ -233,7 +197,7 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
 
     public virtual bool CanTravelNode(NodeTravelType type)
     {
-        return true;
+        return !(type == NodeTravelType.Rocks);
     }
 
     public float GetNodeCostToTravel(NodeTravelType type)
@@ -242,18 +206,15 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
         {
             NodeTravelType.Mine => 0,
             NodeTravelType.HumanCenter => 0,
-            NodeTravelType.Grass => 1,
+            NodeTravelType.Grass => 2,
             NodeTravelType.Rocks => 2,
-            NodeTravelType.Water => 10,
+            NodeTravelType.Water => 5,
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
     }
 
-    public BoidAgent GetBoid()
-    {
-        return boid;
-    }
-
+    public BoidAgent GetBoid() => boid;
+    
     public void InvokeAlarmOn() => onAlarmRaised.Invoke();
 
     public void InvokeAlarmOFf() => onAlarmStop.Invoke();

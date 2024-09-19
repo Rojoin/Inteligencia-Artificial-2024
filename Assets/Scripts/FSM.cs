@@ -80,6 +80,7 @@ public class FSM<EnumState, EnumFlag> where EnumState : Enum where EnumFlag : En
     public void ForceState(EnumState state)
     {
         currentState = Convert.ToInt32(state);
+        ExecuteBehaviour(GetCurrentStateOnEnterBehaviours);
     }
 
     public void Tick()

@@ -42,7 +42,6 @@ namespace Miner
             BehaviourActions behaviour = new BehaviourActions();
             behaviour.SetTransitionBehavior(() =>
             {
-              
                 if (place is Mine mine)
                 {
                     if (isAlarmOn)
@@ -52,7 +51,7 @@ namespace Miner
                     else if (mine.TryGetFood())
                     {
                         int energyToGet = 3;
-                        energy.Invoke(energyToGet);
+                        energy?.Invoke(energyToGet);
                         OnFlag.Invoke(MinerFlags.OnStartMining);
                     }
                 }
@@ -83,7 +82,8 @@ namespace Miner
             return default;
         }
 
-            Action<bool> changeAlarmState;
+        Action<bool> changeAlarmState;
+
         public override BehaviourActions GetExitBehaviours(params object[] parameters)
         {
             var onAlarmStop = parameters[0] as Action<Action, bool>;
@@ -98,6 +98,7 @@ namespace Miner
             isAlarmOn = false;
             changeAlarmState.Invoke(isAlarmOn);
         }
+
         private void OnAlarmRaise()
         {
             isAlarmOn = false;
@@ -190,46 +191,94 @@ namespace Miner
         }
     }
 
-    public class GivingFoodState : State
+    public class IdleFoodState : State
     {
         private int food;
+        private bool isAlarmOn = false;
+        private Action<int> setFood;
         private float timer = 0;
-        private Mine mine;
+        private IPlace place;
+
 //Todo: Add Alarm Interaction.
         public override BehaviourActions GetTickBehaviours(params object[] parameters)
         {
             food = (int)parameters[0];
-            float deltaTime = (float)parameters[1];
-            float timeBetweenGold = (float)parameters[2];
+            setFood = parameters[1] as Action<int>;
+            isAlarmOn = (bool)parameters[2];
 
             BehaviourActions behaviour = new BehaviourActions();
             behaviour.AddMultiThreadBehaviour(0, () =>
             {
-                if (!mine.hasFood)
+                if (place is Mine mine)
                 {
-                    mine.SetFood(food);
+                    if (!mine.hasFood)
+                    {
+                        mine.SetFood(food);
+                        setFood.Invoke(0);
+                    }
                 }
             });
 
             behaviour.SetTransitionBehavior(() =>
             {
-                if (mine.hasFood)
+                if (place is Mine mine)
                 {
-                    OnFlag.Invoke(MinerFlags.OnGoingToCenter);
+                    if (isAlarmOn)
+                    {
+                        OnFlag.Invoke(MinerFlags.OnAlarmSound);
+                    }
+                    else if (mine.hasFood)
+                    {
+                        OnFlag.Invoke(MinerFlags.OnGoingToCenter);
+                    }
+                }
+                else if (place is HumanCenter<Node<Vector2>, Vector2> humanCenter)
+                {
+                    if (!isAlarmOn)
+                    {
+                        OnFlag.Invoke(MinerFlags.OnGoingToMine);
+                    }
                 }
             });
             return behaviour;
-        }
+        }  
+        Action<bool> changeAlarmState;
 
         public override BehaviourActions GetEnterBehaviours(params object[] parameters)
         {
-            mine = (parameters[0] as Node<Vector2>).GetPlace() as Mine;
-
+            if (parameters[0] is Node<Vector2> placeProvider)
+            {
+                place = placeProvider.GetPlace();
+            }
+            else
+            {
+                throw new ArgumentNullException(nameof(parameters),"First param must be a place");
+            }
+            place = (parameters[0] as Node<Vector2>).GetPlace();
+            var onAlarmStop = parameters[1] as Action<Action, bool>;
+            var onAlarmResume = parameters[2] as Action<Action, bool>;
+            changeAlarmState = parameters[3] as Action<bool>;
+            onAlarmStop.Invoke(OnAlarmStoped, true);
+            onAlarmResume.Invoke(OnAlarmRaise, true);
             return default;
         }
+        private void OnAlarmStoped()
+        {
+            isAlarmOn = false;
+            changeAlarmState.Invoke(isAlarmOn);
+        }
 
+        private void OnAlarmRaise()
+        {
+            isAlarmOn = false;
+            changeAlarmState.Invoke(isAlarmOn);
+        }
         public override BehaviourActions GetExitBehaviours(params object[] parameters)
         {
+            var onAlarmStop = parameters[0] as Action<Action, bool>;
+            var onAlarmResume = parameters[1] as Action<Action, bool>;
+            onAlarmStop.Invoke(OnAlarmStoped, true);
+            onAlarmResume.Invoke(OnAlarmRaise, true);
             return default;
         }
     }
@@ -325,13 +374,11 @@ namespace Miner
         void OnAlarmRaised()
         {
             OnFlag.Invoke(MinerFlags.OnAlarmSound);
-
         }
 
         void OnAlarmStop()
         {
             OnFlag.Invoke(MinerFlags.OnAlarmResume);
-       
         }
 
         public override BehaviourActions GetExitBehaviours(params object[] parameters)
