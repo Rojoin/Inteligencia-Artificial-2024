@@ -3,10 +3,10 @@ using System.Linq;
 
 public abstract class Pathfinder<NodeType, Coordinate> where NodeType : INode<Coordinate>
 {
-    protected IDistance<NodeType> graph;
+    protected IDistance<NodeType,Coordinate> graph;
     protected bool useManhattan = true;
 
-    public List<NodeType> FindPath(NodeType startNode, NodeType destinationNode, IGraph<NodeType> graph,
+    public List<NodeType> FindPath(NodeType startNode, NodeType destinationNode, IGraph<NodeType,Coordinate> graph,
         ITraveler traveler)
     {
         Dictionary<NodeType, (NodeType Parent, float AcumulativeCost, float Heuristic)> nodes =
@@ -92,7 +92,7 @@ public abstract class Pathfinder<NodeType, Coordinate> where NodeType : INode<Co
             return path;
         }
     }
-    public List<NodeType> FindPath(NodeType startNode, NodeType destinationNode, IGraph<NodeType> graph)
+    public List<NodeType> FindPath(NodeType startNode, NodeType destinationNode, IGraph<NodeType,Coordinate> graph)
     {
         Dictionary<NodeType, (NodeType Parent, float AcumulativeCost, float Heuristic)> nodes =
             new Dictionary<NodeType, (NodeType Parent, float AcumulativeCost, float Heuristic)>();

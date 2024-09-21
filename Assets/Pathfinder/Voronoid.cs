@@ -1,79 +1,69 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class Voronoid : MonoBehaviour
+public class Voronoid<NodeType, Coordinate> where NodeType : INode<Coordinate>
+    where Coordinate : IEquatable<Coordinate>
 {
-    private float minX, maxX, minY, maxY;
-    private List<Cell> cells;
-    
-    public static List<Cell> GenerateVoronoi(int width, int height, List<Point> points)
+    private List<NodeType> voronoiCenters;
+    private Dictionary<NodeType, List<Vector2>> voronoiPolygons;
+    private int gridWidth, gridHeight;
+    private IGraph<NodeType,Coordinate> graph;
+
+    public Voronoid(List<NodeType> centers, int width, int height,IGraph<NodeType,Coordinate> graph)
     {
-        List<Cell> voronoiCells = new List<Cell>();
+        voronoiCenters = centers;
+        voronoiPolygons = new Dictionary<NodeType, List<Vector2>>();
+        gridWidth = width;
+        gridHeight = height;
+        this.graph = graph;
+    }
+    
+    //Node scale * quatity + (sepation* cuantity -1)
+    public List<Cell<NodeType,Coordinate>> GenerateVoronoi(int width, int height, List<NodeType> points)
+    {
+        List<Cell<NodeType,Coordinate>> voronoiCells = new List<Cell<NodeType,Coordinate>>();
 
         foreach (var point in points)
         {
-            voronoiCells.Add(new Cell(point));
+            voronoiCells.Add(new Cell<NodeType,Coordinate>(point));
         }
-        
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                Point pixel = new Point(x, y);
-                Point closestPoint = GetClosestPoint(pixel, points);
 
-                
-                var cell = voronoiCells.First(c => c.site.Equals(closestPoint));
-                cell.vertices.Add(pixel);
+        foreach (Cell<NodeType,Coordinate> voronoiCell in voronoiCells)
+        {
+            foreach (Cell<NodeType,Coordinate> cell in voronoiCells)
+            {
+                if (cell == voronoiCell)
+                {
+                    continue;
+                }
+                                 
+                voronoiCell.vertices.Add(new Point<Coordinate>(graph.GetMediatrix(cell.site,voronoiCell.site)));
             }
         }
-
         return voronoiCells;
     }
-
-    private static Point GetClosestPoint(Point pixel, List<Point> points)
-    {
-        Point closestPoint = points[0];
-        double minDistance = Distance(pixel, points[0]);
-
-        foreach (var point in points.Skip(1))
-        {
-            double dist = Distance(pixel, point);
-            if (dist < minDistance)
-            {
-                minDistance = dist;
-                closestPoint = point;
-            }
-        }
-
-        return closestPoint;
-    }
     
-    private static double Distance(Point a, Point b)
-    {
-        return Mathf.Sqrt(Mathf.Pow(a.coord.x - b.coord.x, 2) + Mathf.Pow(a.coord.y - b.coord.y, 2));
-    }
 }
 
-public class Cell
+public class Cell<NodeType, Coordinate> where NodeType : INode<Coordinate> where Coordinate : IEquatable<Coordinate>
 {
-    public Point site;
-    public List<Point> vertices;
+    public NodeType site;
+    public List<Point<Coordinate>> vertices;
 
-    public Cell(Point site)
+    public Cell(NodeType site)
     {
         this.site = site;
     }
 }
 
-public class Point
+public class Point<Coordinate>
 {
-    public Vector2 coord;
+    public Coordinate coord;
 
-    public Point(float x, float y)
+    public Point(Coordinate coord)
     {
-        coord = new Vector2(x, y);
+        this.coord = coord;
     }
 }
+

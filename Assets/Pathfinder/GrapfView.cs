@@ -29,12 +29,12 @@ public class GrapfView : MonoBehaviour
     private void CreateGraph()
     {
         graph = new Vector2Graph<Node<Vector2>>(nodesX, nodesY,offset);
-        AStarPathfinder<Node<Vector2>, Vector2> test = new AStarPathfinder<Node<Vector2>, Vector2>();
-        List<Node<Vector2>> findPath = test.FindPath(graph.nodes[0],graph.nodes[^1],graph,_caravanFazade);
-        if (findPath == null||findPath.Count < 0)
-        {
-            CreateGraph();
-        }
+        // AStarPathfinder<Node<Vector2>, Vector2> test = new AStarPathfinder<Node<Vector2>, Vector2>();
+        // List<Node<Vector2>> findPath = test.FindPath(graph.nodes[0],graph.nodes[^1],graph,_caravanFazade);
+        // if (findPath == null||findPath.Count < 0)
+        // {
+        //     CreateGraph();
+        // }
     }
 
     private void DrawMap(Vector2IntGrapf<Node<Vector2Int>> vector2IntGrapf)

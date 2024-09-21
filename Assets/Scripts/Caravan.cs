@@ -127,7 +127,6 @@ public class Caravan : MonoBehaviour, ITraveler, IFlock,IAlarmable
                 if (currentObjective.GetPlace() is Mine)
                 {
                     path = PathFinderManager<Node<Vector2>, Vector2>.GetPath(currentNode, currentObjective, this);
-                    //path.Reverse();
                     SetObjective(path[0].GetCoordinate());
                 }
             });
@@ -144,6 +143,15 @@ public class Caravan : MonoBehaviour, ITraveler, IFlock,IAlarmable
             () =>
             {
                 path = (humanCenterNode.GetPlace() as HumanCenter<Node<Vector2>, Vector2>).GetNewDestination(this);
+                currentNode = path[^1];
+                SetObjective(path[0].GetCoordinate());
+                food = 10;
+                currentObjective = path[^1];
+            }); fsm.SetTransition(MinerStates.Idle, MinerFlags.OnGoingToCenter, MinerStates.Travel,
+            () =>
+            {
+                path = PathFinderManager<Node<Vector2>, Vector2>.GetPath(humanCenterNode, currentNode, this);
+                path.Reverse();
                 currentNode = path[^1];
                 SetObjective(path[0].GetCoordinate());
                 food = 10;

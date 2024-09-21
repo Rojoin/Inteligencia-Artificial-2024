@@ -16,6 +16,7 @@ public interface INode
     public float GetWeight();
     public void SetWeight(float weight);
     public void SetID(int id);
+    public int GetID();
     public NodeTravelType GetNodeType();
     public void SetNodeType(NodeTravelType type);
     public void SetPlace(IPlace place);

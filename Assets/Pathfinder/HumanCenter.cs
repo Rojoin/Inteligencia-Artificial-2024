@@ -8,13 +8,13 @@ public abstract class HumanCenterBase
 
 public class HumanCenter<NodeType, Coordinate> : HumanCenterBase, IPlace where NodeType : class, INode<Coordinate>
 {
-    private NodeType currentNode;
+    public NodeType currentNode;
     private List<Villager> _villagers = new List<Villager>();
-    private IGraph<NodeType> graph;
+    private IGraph<NodeType,Coordinate> graph;
     private AStarPathfinder<NodeType, Coordinate> a = new AStarPathfinder<NodeType, Coordinate>();
     private List<NodeType> goldMines = new List<NodeType>();
 
-    public void SetGraph(IGraph<NodeType> graph)
+    public void SetGraph(IGraph<NodeType,Coordinate> graph)
     {
         this.graph = graph;
     }

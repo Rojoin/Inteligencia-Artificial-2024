@@ -4,7 +4,7 @@ public static class PathFinderManager<NodeType, Coordinate>
     where NodeType : class, INode<Coordinate>
 {
     private static AStarPathfinder<NodeType, Coordinate> a = new AStarPathfinder<NodeType, Coordinate>();
-    public static IGraph<NodeType> graph;
+    public static IGraph<NodeType,Coordinate> graph;
 
     public static List<NodeType> GetPath(NodeType currentNode, NodeType destinationNode,
         ITraveler traveler)

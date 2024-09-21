@@ -47,6 +47,11 @@ public class Node<Coordinate> : INode<Coordinate>, IEquatable<Node<Coordinate>>
     }
 
     public void SetID(int id) => this.id = id;
+    public int GetID()
+    {
+        return this.id;
+    }
+
     public NodeTravelType GetNodeType()
     {
         return type;

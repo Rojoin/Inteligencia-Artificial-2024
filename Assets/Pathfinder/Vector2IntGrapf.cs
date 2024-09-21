@@ -4,7 +4,7 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 
 [Serializable]
-public class Vector2IntGrapf<NodeType> : IGraph<NodeType>,IDistance<NodeType>
+public class Vector2IntGrapf<NodeType> : IGraph<NodeType,UnityEngine.Vector2Int>
     where NodeType : INode<UnityEngine.Vector2Int>, INode, new()
 {
     public List<NodeType> nodes = new List<NodeType>();
@@ -96,6 +96,11 @@ public class Vector2IntGrapf<NodeType> : IGraph<NodeType>,IDistance<NodeType>
     {
         return Mathf.Sqrt(Mathf.Pow(a.GetCoordinate().x - b.GetCoordinate().x, 2) +
                                Mathf.Pow(Mathf.Abs(a.GetCoordinate().y - b.GetCoordinate().y), 2));
+    }
+
+    public Vector2Int GetMediatrix(NodeType a, NodeType b)
+    {
+        return default;
     }
 
     public ICollection<NodeType> GetNodes()

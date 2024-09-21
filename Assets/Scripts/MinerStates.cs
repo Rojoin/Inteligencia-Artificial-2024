@@ -270,7 +270,7 @@ namespace Miner
 
         private void OnAlarmRaise()
         {
-            isAlarmOn = false;
+            isAlarmOn = true;
             changeAlarmState.Invoke(isAlarmOn);
         }
         public override BehaviourActions GetExitBehaviours(params object[] parameters)
