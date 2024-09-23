@@ -57,6 +57,7 @@ public class GrapfView : MonoBehaviour
         {
             var position = new Vector3(node.GetCoordinate().x, node.GetCoordinate().y);
             var newTile = Instantiate(tile, position, Quaternion.identity);
+            newTile.transform.SetParent(this.transform);
             newTile.GetComponent<SpriteRenderer>().sprite = GetSpriteType(node.GetNodeType());
             _tiles.Add(newTile);
         }

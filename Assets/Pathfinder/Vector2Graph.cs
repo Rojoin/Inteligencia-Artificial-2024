@@ -14,6 +14,7 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
     public NodeType[,] nodesMatrix;
     private System.Random random = new System.Random();
     private CaravanFazade _caravanFazade = new();
+    public List<NodeType> mines = new List<NodeType>();
 
     public Vector2Graph(int x, int y, float offSet)
     {
@@ -78,7 +79,7 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
         humanCenter.SetNode(nodes[0]);
         SetRandomMine(humanCenter);
         SetRandomMine(humanCenter);
-        SetRandomMine(humanCenter);
+        //SetRandomMine(humanCenter);
     }
 
     private void SetRandomMine(HumanCenter<NodeType, Vector2> humanCenter)
@@ -96,6 +97,7 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
                 nodeToMine.SetWeight(0);
                 nodeToMine.SetBlocked(false);
                 nodeToMine.SetPlace(new Mine());
+                mines.Add(nodeToMine);
                 humanCenter.AddGoldNode(nodeToMine);
             }
             else
