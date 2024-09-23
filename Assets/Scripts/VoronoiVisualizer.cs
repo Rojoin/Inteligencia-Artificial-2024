@@ -50,12 +50,12 @@ public class VoronoiVisualizer : MonoBehaviour
             // Draw intersection points
              List<Vector2> intersectionPoints = CalculateAllIntersections(voronoi.voronoiPolygons);
             
-             foreach (Vector2 intersection in intersectionPoints)
-             {
-                 // Draw intersection points as small spheres in the scene view
-                 Gizmos.color = intersectionColor;
-                 Gizmos.DrawSphere(intersection, pointSize);
-             }
+             //foreach (Vector2 intersection in intersectionPoints)
+             //{
+             //    // Draw intersection points as small spheres in the scene view
+             //    Gizmos.color = intersectionColor;
+             //    Gizmos.DrawSphere(intersection, pointSize);
+             //}
         }
     }
 

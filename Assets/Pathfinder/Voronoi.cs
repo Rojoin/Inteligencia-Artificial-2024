@@ -21,7 +21,7 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
         voronoiPolygons = new Dictionary<Node<Vector2>, List<Segment<Vector2>>>();
         gridWidth = width;
         gridHeight = height;
-       // this.graph = graph;
+        // this.graph = graph;
     }
 
     //Node scale * quatity + (sepation* cuantity -1)
@@ -30,11 +30,11 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
         foreach (Node<Vector2> center in voronoiCenters)
         {
             List<Segment<Vector2>> voronoiPoints = new List<Segment<Vector2>>();
-            
-            Point<Vector2> upLeft = new(new Vector2(-padding*2, gridHeight + padding));
+
+            Point<Vector2> upLeft = new(new Vector2(-padding, gridHeight + padding));
             Point<Vector2> upRight = new(new Vector2(gridWidth + padding, gridHeight + padding));
-            Point<Vector2> downRight = new(new Vector2(gridWidth + padding, -padding*2));
-            Point<Vector2> downLeft = new(new Vector2(-padding *2, -padding*2));
+            Point<Vector2> downRight = new(new Vector2(gridWidth + padding, -padding));
+            Point<Vector2> downLeft = new(new Vector2(-padding, -padding));
 
             Segment<Vector2> upSegment = new(upLeft, upRight);
             Segment<Vector2> rightSegment = new(upRight, downRight);
@@ -42,17 +42,17 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
             Segment<Vector2> leftSegment = new(downLeft, upLeft);
 
             upLeft.AddSegments(upSegment, leftSegment);
-            upRight.AddSegments(rightSegment,upSegment);
+            upRight.AddSegments(rightSegment, upSegment);
             downRight.AddSegments(downSegment, rightSegment);
-            downLeft.AddSegments(leftSegment,downSegment);
+            downLeft.AddSegments(leftSegment, downSegment);
 
             voronoiPoints.Add(upSegment);
             voronoiPoints.Add(rightSegment);
             voronoiPoints.Add(downSegment);
             voronoiPoints.Add(leftSegment);
 
-            voronoiPolygons.Add(center,voronoiPoints);
-            // voronoiPolygons[center] = voronoiPoints;
+            voronoiPolygons.Add(center, voronoiPoints);
+            voronoiPolygons[center] = voronoiPoints;
         }
 
         for (int index = 0; index < voronoiCenters.Count; index++)
@@ -65,16 +65,14 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
                 }
 
                 //For the weighted i need to move the point according to the wight of the polygons 
-                Vector2 director = GetDirectorVector(index, j);
+                Vector2 director = GetDirectorVector(index, j, out Vector2 midPoint);
 
-                CalculatePolygon(voronoiCenters[index], director);
-
+                CalculatePolygon(voronoiCenters[index], midPoint, director);
             }
         }
-        
     }
 
-    private Vector2 GetDirectorVector(int index, int j)
+    private Vector2 GetDirectorVector(int index, int j, out Vector2 center)
     {
         Vector2 A = voronoiCenters[index].GetCoordinate();
         Vector2 B = voronoiCenters[j].GetCoordinate();
@@ -83,41 +81,69 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
         Vector2 director = new Vector2(-direction.y, direction.x).normalized;
 
         float distance = Vector2.Distance(A, B);
-        //float distance = Mathf.Sqrt(Mathf.Pow(A.x - B.x, 2) +
-        //                            Mathf.Pow(Mathf.Abs(A.y - B.y), 2));
-
+        distance = Mathf.Sqrt(Mathf.Pow(Mathf.Abs(A.x - B.x), 2) +
+                              Mathf.Pow(Mathf.Abs(A.y - B.y), 2));
+        center = (A + B) * 0.5f;
 
         director *= (distance * 0.5f);
         return director;
     }
 
-    public bool LineVectorCollision(Segment<Vector2> line, Vector2 dir, out Vector2 intersection)
+    public bool LineVectorCollision(Segment<Vector2> seg, Vector2 dir, out Vector2 intersection)
     {
-        Vector2 startPoint = new Vector2(-1, -1);
-        Vector2 lineDir = line.end.coord - line.init.coord;
-    
-        // Calculate the denominator of the intersection formula
-        float denom =   dir.y * lineDir.x-dir.x * lineDir.y;
+        // Vector2 startPoint = new Vector2(-1, -1);
+        Vector2 segDir = seg.end.coord - seg.init.coord;
 
-        // Check if the lines are parallel (denom close to 0)
+
+        float denom = dir.y * segDir.x - dir.x * segDir.y;
+
         if (Mathf.Abs(denom) < Mathf.Epsilon)
         {
             intersection = INVALID_VALUE;
             return false;
         }
 
-        // Calculate the uA and uB values
-        float uA = ((dir.x * (line.init.coord.y - startPoint.y)) - (dir.y * (line.init.coord.x - startPoint.x))) / denom;
-        float uB = ((lineDir.x * (line.init.coord.y - startPoint.y)) - (lineDir.y * (line.init.coord.x - startPoint.x))) / denom;
 
-        // Check if the intersection is within the bounds of the segment
-        if (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1)
+        float uA = ((dir.x * (seg.init.coord.y)) - (dir.y * (seg.init.coord.x))) / denom;
+        float uB = ((segDir.x * (seg.init.coord.y)) - (segDir.y * (seg.init.coord.x))) / denom;
+
+
+        if (uA >= 0 && uA <= 1)
         {
-            // Calculate the intersection point using uA
-             intersection = new Vector2(
-                 line.init.coord.x + uA * lineDir.x,
-                 line.init.coord.y + uA * lineDir.y);
-            //intersection = startPoint + dir.normalized * uA;
+            intersection = new Vector2(
+                seg.init.coord.x + uA * segDir.x,
+                seg.init.coord.y + uA * segDir.y);
+            intersection = seg.init.coord + dir.normalized * uA;
+            return true;
+        }
+
+
+        intersection = INVALID_VALUE;
+        return false;
+    }
+
+    public bool LineVectorCollision(Vector2 rayOrigin, Vector2 rayDir, Segment<Vector2> seg, out Vector2 intersection)
+    {
+        Vector2 segDir = seg.end.coord - seg.init.coord;
+
+        float denom = rayDir.x * segDir.y - rayDir.y * segDir.x;
+
+        // If the determinant is near zero, the lines are parallel and don't intersect
+        if (Mathf.Abs(denom) < Mathf.Epsilon)
+        {
+            intersection = INVALID_VALUE;
+            return false;
+        }
+
+        // Parametric solution to find the intersection point
+        float t = ((seg.init.coord.x - rayOrigin.x) * segDir.y - (seg.init.coord.y - rayOrigin.y) * segDir.x) / denom;
+        float u = ((seg.init.coord.x - rayOrigin.x) * rayDir.y - (seg.init.coord.y - rayOrigin.y) * rayDir.x) / denom;
+
+        // Check if the intersection is within the bounds of the segment (u between 0 and 1) and if t >= 0 (intersection in front of the ray)
+        if (u >= 0 && u <= 1 && t >= 0)
+        {
+            // Calculate the intersection point
+            intersection = seg.init.coord + u * segDir;
             return true;
         }
 
@@ -125,18 +151,33 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
         return false;
     }
 
-    void CalculatePolygon(Node<Vector2> center, Vector2 dir)
+    void CalculatePolygon(Node<Vector2> center, Vector2 origin, Vector2 dir)
     {
-        List<Vector2>  interceptionPoints = new List<Vector2>();
+        List<Vector2> interceptionPoints = new List<Vector2>();
         List<Point<Vector2>> pointsA = new List<Point<Vector2>>();
         List<Point<Vector2>> pointsB = new List<Point<Vector2>>();
         List<Segment<Vector2>> polygonA = new(voronoiPolygons[center]);
         List<Segment<Vector2>> polygonB = new(voronoiPolygons[center]);
+
+        var t = 10000;
         for (int i = 0; i < voronoiPolygons[center].Count; i++)
         {
             Segment<Vector2> segment = voronoiPolygons[center][i];
             //TOdo:Change so the Polygons are created correctly
-            if (LineVectorCollision(segment, dir, out Vector2 inter) && inter != INVALID_VALUE)
+
+
+            Vector2 inter = INVALID_VALUE;
+
+            if (LineVectorCollision(origin, dir * t, segment, out Vector2 inter1) && inter1 != INVALID_VALUE)
+            {
+                inter = inter1;
+            }
+            else if (LineVectorCollision(origin, dir * -t, segment, out Vector2 inter2) && inter2 != INVALID_VALUE)
+            {
+                inter = inter2;
+            }
+
+            if (inter != INVALID_VALUE)
             {
                 Segment<Vector2> aInter = new Segment<Vector2>(segment.init, new Point<Vector2>(inter));
                 segment.init.Segments[0] = aInter;
@@ -149,7 +190,6 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
                 interceptionPoints.Add(inter);
                 pointsA.Add(aInter.end);
                 pointsB.Add(bInter.init);
-                
             }
         }
 
@@ -163,16 +203,15 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
             pointsB[1].Segments.Add(aInter);
             polygonA.Add(aInter);
             polygonB.Add(bInter);
-            if (IsPointInPolygon(center.GetCoordinate(),polygonA))
+            if (IsPointInPolygon(center.GetCoordinate(), polygonA))
             {
                 voronoiPolygons[center] = polygonA;
             }
-            else
+            else if (IsPointInPolygon(center.GetCoordinate(), polygonB))
             {
                 voronoiPolygons[center] = polygonB;
             }
         }
-        
     }
 
 
@@ -184,7 +223,7 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
         foreach (var segment in polygonSegments)
         {
             Vector2 intersection;
-            if (LineVectorCollision(segment, dir, out intersection) && intersection != INVALID_VALUE)
+            if (LineVectorCollision(point, dir, segment, out intersection) && intersection != INVALID_VALUE)
             {
                 if (IsPointOnSegment(segment, intersection) && intersection.x > point.x)
                 {

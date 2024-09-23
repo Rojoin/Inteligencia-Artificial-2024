@@ -1340,7 +1340,7 @@ MonoBehaviour:
   intersectionColor: {r: 1, g: 0.3596303, b: 0, a: 1}
   pointSize: 0.1
   Grapf: {fileID: 815766764}
-  scale: {x: 10, y: 10}
+  scale: {x: 9, y: 9}
 --- !u!4 &1464509744
 Transform:
   m_ObjectHideFlags: 0

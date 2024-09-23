@@ -79,6 +79,8 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
         humanCenter.SetNode(nodes[0]);
         SetRandomMine(humanCenter);
         SetRandomMine(humanCenter);
+        SetRandomMine(humanCenter);
+        // SetRandomMine(humanCenter);
         //SetRandomMine(humanCenter);
     }
 
