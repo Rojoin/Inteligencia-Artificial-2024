@@ -27,7 +27,7 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
 
     public Action onAlarmRaised = () => { };
     public Action onAlarmStop = () => { };
-
+    private Matrix4x4 drawMatrix;
 
     private Node<Vector2> startNode;
     private Coroutine startPathFinding;
@@ -35,6 +35,9 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
     public GrapfView grafp;
     private AStarPathfinder<Node<Vector2>, Vector2> Pathfinder =
         new AStarPathfinder<Node<Vector2>, Vector2>();
+    public GameObject prefab;
+    private Mesh prefabMesh;
+    private Material prefabMaterial;
 
 
     private void OnEnable()
@@ -43,7 +46,8 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
         {
             StopCoroutine(startPathFinding);
         }
-
+        prefabMesh = prefab.GetComponent<MeshFilter>().sharedMesh;
+        prefabMaterial = prefab.GetComponent<MeshRenderer>().sharedMaterial;
         startPathFinding = StartCoroutine(StartVillager());
     }
 
@@ -219,6 +223,15 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
     private void Update()
     {
         fsm?.Tick();
+    }
+    private void LateUpdate()
+    {
+        for (int j = 0; j < prefabMesh.subMeshCount; j++)
+        { 
+            drawMatrix.SetTRS(transform.position, transform.rotation, transform.localScale);
+            Graphics.DrawMesh(prefabMesh, drawMatrix, prefabMaterial, 0, null, j);
+            
+        }
     }
 
     private void OnDrawGizmos()

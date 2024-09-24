@@ -62,7 +62,7 @@ public class ECSExample_ECSWhitoutGOs : MonoBehaviour
             for (int j = 0; j < prefabMesh.subMeshCount; j++)
             {
             Graphics.DrawMeshInstanced(prefabMesh, j, prefabMaterial, drawMatrix[i]);
-                
+            
             }
         }
     }

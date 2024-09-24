@@ -12,6 +12,7 @@ public class VoronoiVisualizer : MonoBehaviour
     public GrapfView Grapf;
     List<Node<Vector2>> centers;
     public Vector2 scale = new Vector2();
+    public GameObject a;
 
     private IEnumerator Start()
     {
@@ -24,6 +25,23 @@ public class VoronoiVisualizer : MonoBehaviour
 
         voronoi = new Voronoi<Node<Vector2>, Vector2>(centers, (int)scale.x, (int)scale.y, null);
         voronoi.GenerateVoronoi();
+    }
+
+    private void Update()
+    {
+        if (voronoi != null)
+        {
+            var test = new Vector2(a.transform.position.x, a.transform.position.y);
+
+            foreach (var VARIABLE in voronoi.voronoiPolygons)
+            {
+                if ( voronoi.IsPointInPolygon(test,VARIABLE.Value))
+                {
+                    Debug.Log($"Inside influence of {VARIABLE.Key.GetCoordinate().ToString()}");
+                }
+               
+            }
+        }
     }
 
     private void OnDrawGizmos()
