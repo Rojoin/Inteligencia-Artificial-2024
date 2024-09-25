@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -5,32 +7,43 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-[ExecuteAlways]
+// [ExecuteAlways]
 public class VoronoiDiagram : MonoBehaviour
 {
     public bool createSegments;
     public bool drawPolis;
 
-    [SerializeField] private List<Vector3> intersections = new List<Vector3>();
+    [SerializeField] private List<Vector2> intersections = new List<Vector2>();
     [Space(15), SerializeField] private List<PoligonsVoronoi> polis = new List<PoligonsVoronoi>();
-    [SerializeField] private List<Transform> transformPoints = new List<Transform>();
+    [SerializeField] private List<Node<Vector2>> transformPoints = new List<Node<Vector2>>();
     [SerializeField] private List<SegmentLimit> segmentLimit = new List<SegmentLimit>();
+    public GrapfView graph;
 
     public List<PoligonsVoronoi> GetPoly => polis;
 
-    public void AddNewItem (Transform item)
+    public IEnumerator Start()
     {
-        transformPoints.Add(item);
-        CreateSegments();
+        yield return null;
+        yield return null;
+        yield return null;
+        yield return null;
+        yield return null;
+        transformPoints = graph.graph.mines;
     }
 
-    public void RemoveItem (Transform item)
-    {
-        transformPoints.Remove(item);
-        CreateSegments();
-    }
+    // public void AddNewItem (Transform item)
+    // {
+    //     transformPoints.Add(item);
+    //     CreateSegments();
+    // }
+    //
+    // public void RemoveItem (Transform item)
+    // {
+    //     transformPoints.Remove(item);
+    //     CreateSegments();
+    // }
 
-    private void Update ()
+    private void Update()
     {
         if (createSegments)
         {
@@ -38,8 +51,8 @@ public class VoronoiDiagram : MonoBehaviour
             CreateSegments();
         }
     }
-
-    private void CreateSegments ()
+[ContextMenu("Create Segments")]
+    private void CreateSegments()
     {
         if (transformPoints == null)
             return;
@@ -47,7 +60,7 @@ public class VoronoiDiagram : MonoBehaviour
             return;
 
         Segment.amountSegments = 0;
-        polis.Clear(); 
+        polis.Clear();
         intersections.Clear();
         for (int i = 0; i < transformPoints.Count; i++)
         {
@@ -66,7 +79,7 @@ public class VoronoiDiagram : MonoBehaviour
             {
                 if (i == j)
                     continue;
-                Segment segment = new Segment(transformPoints[i].position, transformPoints[j].position);
+                Segment segment = new Segment(transformPoints[i].GetCoordinate(), transformPoints[j].GetCoordinate());
                 polis[i].AddSegment(segment);
             }
         }
@@ -79,7 +92,7 @@ public class VoronoiDiagram : MonoBehaviour
         SetWeightPoligons();
     }
 
-    private void SetWeightPoligons ()
+    private void SetWeightPoligons()
     {
         // int allWeight = 0;
         // for (int i = 0; i < NodeGenerator.GetMap.Length; i++)
@@ -119,12 +132,12 @@ public class VoronoiDiagram : MonoBehaviour
 
 #if UNITY_EDITOR
 
-    private void OnDrawGizmos ()
+    private void OnDrawGizmos()
     {
         DrawPolis(drawPolis);
     }
 
-    private void DrawPolis (bool drawPolis)
+    private void DrawPolis(bool drawPolis)
     {
         if (polis != null)
         {

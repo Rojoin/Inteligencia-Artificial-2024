@@ -39,7 +39,7 @@ public class Segment
     public Vector3 Final => final;
     public float Distance => distance;
 
-    public void GetTwoPoints (out Vector3 p1, out Vector3 p2)
+    public void GetTwoPoints (out Vector2 p1, out Vector2 p2)
     {
         p1 = mediatrix;
         p2 = mediatrix + direction * 10;
@@ -53,21 +53,21 @@ public class Segment
     /// <param name="bp1">Recta 2 Punto 1</param>
     /// <param name="bp2">Recta 2 Punto 2</param>
     /// <returns></returns>
-    public static Vector3 Intersection(Vector3 ap1, Vector3 ap2, Vector3 bp1, Vector3 bp2)
+    public static Vector2 Intersection(Vector2 ap1, Vector2 ap2, Vector2 bp1, Vector2 bp2)
     {
         // https://es.wikipedia.org/wiki/Intersección_de_dos_rectas o https://en.wikipedia.org/wiki/Line–line_intersection
 
-        float denominador = ((ap1.x - ap2.x) * (bp1.z - bp2.z) - (ap1.z - ap2.z) * (bp1.x - bp2.x));
+        float denominador = ((ap1.x - ap2.x) * (bp1.y - bp2.y) - (ap1.y - ap2.y) * (bp1.x - bp2.x));
 
-        Vector3 intersection = Vector3.zero;
+        Vector2 intersection = Vector2.zero;
         if (denominador == 0)
             return intersection;
 
-        float numeradorX = ((ap1.x * ap2.z - ap1.z * ap2.x) * (bp1.x - bp2.x) - (ap1.x - ap2.x) * (bp1.x * bp2.z - bp1.z * bp2.x));
-        float numeradorZ = ((ap1.x * ap2.z - ap1.z * ap2.x) * (bp1.z - bp2.z) - (ap1.z - ap2.z) * (bp1.x * bp2.z - bp1.z * bp2.x));
+        float numeradorX = ((ap1.x * ap2.y - ap1.y * ap2.x) * (bp1.x - bp2.x) - (ap1.x - ap2.x) * (bp1.x * bp2.y - bp1.y * bp2.x));
+        float numeradorZ = ((ap1.x * ap2.y - ap1.y * ap2.x) * (bp1.y - bp2.y) - (ap1.y - ap2.y) * (bp1.x * bp2.y - bp1.y * bp2.x));
 
         intersection.x = numeradorX / denominador;
-        intersection.z = numeradorZ / denominador;
+        intersection.y = numeradorZ / denominador;
 
         return intersection;
     }

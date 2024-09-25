@@ -228,9 +228,8 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
     {
         for (int j = 0; j < prefabMesh.subMeshCount; j++)
         { 
-            drawMatrix.SetTRS(transform.position, transform.rotation, transform.localScale);
+            drawMatrix.SetTRS(transform.position, transform.rotation, prefab.transform.localScale);
             Graphics.DrawMesh(prefabMesh, drawMatrix, prefabMaterial, 0, null, j);
-            
         }
     }
 

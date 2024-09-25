@@ -7,28 +7,28 @@ public class PoligonsVoronoi
 {
     public bool drawPoli;
     public int weight = 0;
-    [SerializeField] private Transform itemSector;
+    [SerializeField] private Node<Vector2> itemSector;
     [SerializeField] private List<Segment> segments = new List<Segment>();
     [SerializeField] private List<Segment> limits = new List<Segment>();
-    [SerializeField] private List<Vector3> intersections = new List<Vector3>();
+    [SerializeField] private List<Vector2> intersections = new List<Vector2>();
     [SerializeField] private List<int> indexIntersections = new List<int>();
-    private List<Vector3> allIntersections;
+    private List<Vector2> allIntersections;
     private Color colorGizmos = new Color(0, 0, 0, 0);
-    public void SortSegment () => segments.Sort((p1, p2) => p1.Distance.CompareTo(p2.Distance));
-    
-    public PoligonsVoronoi (Transform item, List<Vector3> allIntersections)
+    public void SortSegment() => segments.Sort((p1, p2) => p1.Distance.CompareTo(p2.Distance));
+
+    public PoligonsVoronoi(Node<Vector2> item, List<Vector2> allIntersections)
     {
         itemSector = item;
         this.allIntersections = allIntersections;
     }
 
-    public void AddSegment (Segment refSegment)
+    public void AddSegment(Segment refSegment)
     {
         Segment segment = new Segment(refSegment.Origin, refSegment.Final);
         segments.Add(segment);
     }
 
-    public void SetIntersections ()
+    public void SetIntersections()
     {
         colorGizmos.r = Random.Range(0, 1.0f);
         colorGizmos.g = Random.Range(0, 1.0f);
@@ -49,14 +49,14 @@ public class PoligonsVoronoi
                 if (segments[i].id == segments[j].id)
                     continue;
 
-                segments[i].GetTwoPoints(out Vector3 p1, out Vector3 p2);
-                segments[j].GetTwoPoints(out Vector3 p3, out Vector3 p4);
-                Vector3 centerCircle = Segment.Intersection(p1, p2, p3, p4);
+                segments[i].GetTwoPoints(out Vector2 p1, out Vector2 p2);
+                segments[j].GetTwoPoints(out Vector2 p3, out Vector2 p4);
+                Vector2 centerCircle = Segment.Intersection(p1, p2, p3, p4);
 
                 if (intersections.Contains(centerCircle))
                     continue;
 
-                float maxDistance = Vector3.Distance(centerCircle, segments[i].Origin);
+                float maxDistance = Vector2.Distance(centerCircle, segments[i].Origin);
 
                 bool hasOtherPoint = false;
                 for (int k = 0; k < segments.Count; k++)
@@ -83,12 +83,12 @@ public class PoligonsVoronoi
         SortPointsPolygon();
     }
 
-    public void AddSegmentsWithLimits (List<SegmentLimit> limits)
+    public void AddSegmentsWithLimits(List<SegmentLimit> limits)
     {
         foreach (SegmentLimit limit in limits)
         {
-            Vector3 origin = itemSector.transform.position;
-            Vector3 final = limit.GetOpositePosition(origin);
+            Vector2 origin = itemSector.GetCoordinate();
+            Vector2 final = limit.GetOpositePosition(origin);
 
             Segment segment = new Segment(origin, final);
             this.limits.Add(segment);
@@ -96,13 +96,13 @@ public class PoligonsVoronoi
         }
     }
 
-    private bool HasOtherPointInCircle (Vector3 centerCircle, Segment segment, float maxDistance)
+    private bool HasOtherPointInCircle(Vector2 centerCircle, Segment segment, float maxDistance)
     {
-        float distance = Vector3.Distance(centerCircle, segment.Final);
+        float distance = Vector2.Distance(centerCircle, segment.Final);
         return distance < maxDistance;
     }
 
-    void RemoveUnusedSegments ()
+    void RemoveUnusedSegments()
     {
         List<Segment> segmentsUnused = new List<Segment>();
         for (int i = 0; i < segments.Count; i++)
@@ -117,14 +117,14 @@ public class PoligonsVoronoi
         }
     }
 
-    void SortPointsPolygon ()
+    void SortPointsPolygon()
     {
         intersections.Clear();
-        Vector3 lastIntersection = segments[0].intersection[0];
+        Vector2 lastIntersection = segments[0].intersection[0];
         intersections.Add(lastIntersection);
 
-        Vector3 firstIntersection;
-        Vector3 secondIntersection;
+        Vector2 firstIntersection;
+        Vector2 secondIntersection;
 
         for (int i = 0; i < segments.Count; i++)
         {
@@ -165,7 +165,7 @@ public class PoligonsVoronoi
         indexIntersections.Clear();
         for (int i = 0; i < intersections.Count; i++)
         {
-            Vector3 intersection = intersections[i];
+            Vector2 intersection = intersections[i];
             if (!allIntersections.Contains(intersection))
             {
                 allIntersections.Add(intersection);
@@ -187,7 +187,7 @@ public class PoligonsVoronoi
         UpdateIntersectionList();
     }
 
-    void UpdateIntersectionList ()
+    void UpdateIntersectionList()
     {
         intersections.Clear();
 
@@ -197,7 +197,7 @@ public class PoligonsVoronoi
         }
     }
 
-    public void DrawPoli (bool drawPolis)
+    public void DrawPoli(bool drawPolis)
     {
         if (drawPolis)
             DrawPolygon();
@@ -205,7 +205,7 @@ public class PoligonsVoronoi
             DrawPolygon();
     }
 
-    void DrawPolygon ()
+    void DrawPolygon()
     {
         Vector3[] points = new Vector3[intersections.Count + 1];
 
@@ -224,7 +224,7 @@ public class PoligonsVoronoi
 
 
     // https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/?ref=gcse
-    public bool IsInside (Vector3 point)
+    public bool IsInside(Vector2 point)
     {
         int lenght = intersections.Count;
 
@@ -232,29 +232,29 @@ public class PoligonsVoronoi
         {
             return false;
         }
-        
-        Vector3 extreme = new Vector3(100, 0, point.z);
-        
+
+        Vector2 extreme = new Vector2(100, point.y);
+
         int count = 0;
         for (int i = 0; i < lenght; i++)
         {
             int next = (i + 1) % lenght;
-            
-            Vector3 intersection = Segment.Intersection(intersections[i], intersections[next], point, extreme);
-            if (intersection != Vector3.zero)
+
+            Vector2 intersection = Segment.Intersection(intersections[i], intersections[next], point, extreme);
+            if (intersection != Vector2.zero)
                 if (IsPointInSegment(intersection, intersections[i], intersections[next]))
                     if (IsPointInSegment(intersection, point, extreme))
                         count++;
-        } 
-        
-        return (count % 2 == 1); 
+        }
+
+        return (count % 2 == 1);
     }
 
-    public static bool IsPointInSegment(Vector3 point, Vector3 start, Vector3 end)
+    public static bool IsPointInSegment(Vector2 point, Vector2 start, Vector2 end)
     {
         return (point.x <= Mathf.Max(start.x, end.x) &&
                 point.x >= Mathf.Min(start.x, end.x) &&
-                point.z <= Mathf.Max(start.z, end.z) &&
-                point.z >= Mathf.Min(start.z, end.z));
+                point.y <= Mathf.Max(start.y, end.y) &&
+                point.y >= Mathf.Min(start.y, end.y));
     }
 }
