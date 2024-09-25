@@ -1,22 +1,22 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-
 [System.Serializable]
 public class PoligonsVoronoi
 {
     public bool drawPoli;
     public int weight = 0;
-    [SerializeField] private Node<Vector2> itemSector;
+    [SerializeField] private Transform itemSector;
     [SerializeField] private List<Segment> segments = new List<Segment>();
     [SerializeField] private List<Segment> limits = new List<Segment>();
     [SerializeField] private List<Vector2> intersections = new List<Vector2>();
     [SerializeField] private List<int> indexIntersections = new List<int>();
     private List<Vector2> allIntersections;
     private Color colorGizmos = new Color(0, 0, 0, 0);
+    
     public void SortSegment() => segments.Sort((p1, p2) => p1.Distance.CompareTo(p2.Distance));
 
-    public PoligonsVoronoi(Node<Vector2> item, List<Vector2> allIntersections)
+    public PoligonsVoronoi(Transform item, List<Vector2> allIntersections)
     {
         itemSector = item;
         this.allIntersections = allIntersections;
@@ -87,8 +87,8 @@ public class PoligonsVoronoi
     {
         foreach (SegmentLimit limit in limits)
         {
-            Vector2 origin = itemSector.GetCoordinate();
-            Vector2 final = limit.GetOpositePosition(origin);
+            Vector2 origin = itemSector.transform.position; // Convert to Vector2
+            Vector2 final = limit.GetOpositePosition(origin); // Convert to Vector2
 
             Segment segment = new Segment(origin, final);
             this.limits.Add(segment);
@@ -161,7 +161,6 @@ public class PoligonsVoronoi
         if (!intersections.Contains(secondIntersection))
             intersections.Add(secondIntersection);
 
-
         indexIntersections.Clear();
         for (int i = 0; i < intersections.Count; i++)
         {
@@ -222,23 +221,21 @@ public class PoligonsVoronoi
         Handles.DrawPolyLine(points);
     }
 
-
-    // https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/?ref=gcse
     public bool IsInside(Vector2 point)
     {
-        int lenght = intersections.Count;
+        int length = intersections.Count;
 
-        if (lenght < 3)
+        if (length < 3)
         {
             return false;
         }
 
-        Vector2 extreme = new Vector2(100, point.y);
+        Vector2 extreme = new Vector2(100, point.y); // Adjusted for Vector2
 
         int count = 0;
-        for (int i = 0; i < lenght; i++)
+        for (int i = 0; i < length; i++)
         {
-            int next = (i + 1) % lenght;
+            int next = (i + 1) % length;
 
             Vector2 intersection = Segment.Intersection(intersections[i], intersections[next], point, extreme);
             if (intersection != Vector2.zero)

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
-    where Coordinate : IEquatable<Coordinate>
+    where Coordinate : IEquatable<Vector2>
 {
     private List<Node<Vector2>> voronoiCenters;
     public Dictionary<Node<Vector2>, List<Segment<Vector2>>> voronoiPolygons;
     private int gridWidth, gridHeight;
-    private IGraph<NodeType, Coordinate> graph;
+    // private IGraph<NodeType, Coordinate> graph;
 
     private Coordinate min;
     private Coordinate max;
