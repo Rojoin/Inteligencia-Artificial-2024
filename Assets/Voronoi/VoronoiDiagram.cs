@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
+
 [ExecuteAlways]
 public class VoronoiDiagram : MonoBehaviour
 {
@@ -7,25 +9,30 @@ public class VoronoiDiagram : MonoBehaviour
     public bool drawPolis;
 
     [SerializeField] private List<Vector2> intersections = new List<Vector2>();
-    [Space(15), SerializeField] private List<PoligonsVoronoi> polis = new List<PoligonsVoronoi>();
+    [Space(15), SerializeField]
+    private List<ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2>> polis =
+        new List<ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2>>();
     [SerializeField] private List<Transform> transformPoints = new List<Transform>();
     [SerializeField] private List<SegmentLimit> segmentLimit = new List<SegmentLimit>();
+    [SerializeField]
+    private Dictionary<ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2>, Color> polyColors =
+        new Dictionary<ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2>, Color>();
 
-    public List<PoligonsVoronoi> GetPoly => polis;
+    public List<ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2>> GetPoly => polis;
 
-    public void AddNewItem (Transform item)
+    public void AddNewItem(Transform item)
     {
         transformPoints.Add(item);
         CreateSegments();
     }
 
-    public void RemoveItem (Transform item)
+    public void RemoveItem(Transform item)
     {
         transformPoints.Remove(item);
         CreateSegments();
     }
 
-    private void Update ()
+    private void Update()
     {
         if (createSegments)
         {
@@ -34,20 +41,28 @@ public class VoronoiDiagram : MonoBehaviour
         }
     }
 
-    private void CreateSegments ()
+    private void CreateSegments()
     {
+        //Todo: Change transfroms to nodes
         if (transformPoints == null)
             return;
         if (transformPoints.Count < 1)
             return;
 
-        Segment.amountSegments = 0;
-        polis.Clear(); 
+        SegmentVec2<Vector2>.amountSegments = 0;
+        polis.Clear();
         intersections.Clear();
+          polyColors.Clear();
+         
         for (int i = 0; i < transformPoints.Count; i++)
         {
-            PoligonsVoronoi poli = new PoligonsVoronoi(transformPoints[i], intersections);
+            ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2> poli =
+                new ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2>(transformPoints[i].position, intersections);
             polis.Add(poli);
+            poli.colorGizmos.r = Random.Range(0,1.0f);
+            poli.colorGizmos.g = Random.Range(0,1.0f);
+            poli.colorGizmos.b = Random.Range(0,1.0f);
+            poli.colorGizmos.a = 0.3f;
         }
 
         for (int i = 0; i < polis.Count; i++)
@@ -61,7 +76,8 @@ public class VoronoiDiagram : MonoBehaviour
             {
                 if (i == j)
                     continue;
-                Segment segment = new Segment(transformPoints[i].position, transformPoints[j].position);
+                SegmentVec2<Vector2> segment =
+                    new SegmentVec2<Vector2>(transformPoints[i].position, transformPoints[j].position);
                 polis[i].AddSegment(segment);
             }
         }
@@ -74,7 +90,7 @@ public class VoronoiDiagram : MonoBehaviour
         SetWeightPoligons();
     }
 
-    private void SetWeightPoligons ()
+    private void SetWeightPoligons()
     {
         // int allWeight = 0;
         // for (int i = 0; i < NodeGenerator.GetMap.Length; i++)
@@ -114,18 +130,21 @@ public class VoronoiDiagram : MonoBehaviour
 
 #if UNITY_EDITOR
 
-    private void OnDrawGizmos ()
+    private void OnDrawGizmos()
     {
         DrawPolis(drawPolis);
     }
 
-    private void DrawPolis (bool drawPolis)
+    private void DrawPolis(bool drawPolis)
     {
         if (polis != null)
         {
-            foreach (PoligonsVoronoi poli in polis)
+            foreach (ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2> poli in polis)
             {
-                poli.DrawPoli(drawPolis);
+                if (poli.drawPoli || drawPolis)
+                {
+                    poli.DrawPoly();
+                }
             }
         }
     }

@@ -6,7 +6,7 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
     where Coordinate : IEquatable<Vector2>
 {
     private List<Node<Vector2>> voronoiCenters;
-    public Dictionary<Node<Vector2>, List<Segment<Vector2>>> voronoiPolygons;
+    public Dictionary<Node<Vector2>, List<Segments<Vector2>>> voronoiPolygons;
     private int gridWidth, gridHeight;
     // private IGraph<NodeType, Coordinate> graph;
 
@@ -18,7 +18,7 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
     public Voronoi(List<Node<Vector2>> centers, int width, int height, IGraph<NodeType, Coordinate> graph)
     {
         voronoiCenters = centers;
-        voronoiPolygons = new Dictionary<Node<Vector2>, List<Segment<Vector2>>>();
+        voronoiPolygons = new Dictionary<Node<Vector2>, List<Segments<Vector2>>>();
         gridWidth = width;
         gridHeight = height;
         // this.graph = graph;
@@ -29,27 +29,27 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
     {
         foreach (Node<Vector2> center in voronoiCenters)
         {
-            List<Segment<Vector2>> voronoiPoints = new List<Segment<Vector2>>();
+            List<Segments<Vector2>> voronoiPoints = new List<Segments<Vector2>>();
 
             Point<Vector2> upLeft = new(new Vector2(-padding, gridHeight + padding));
             Point<Vector2> upRight = new(new Vector2(gridWidth + padding, gridHeight + padding));
             Point<Vector2> downRight = new(new Vector2(gridWidth + padding, -padding));
             Point<Vector2> downLeft = new(new Vector2(-padding, -padding));
 
-            Segment<Vector2> upSegment = new(upLeft, upRight);
-            Segment<Vector2> rightSegment = new(upRight, downRight);
-            Segment<Vector2> downSegment = new(downRight, downLeft);
-            Segment<Vector2> leftSegment = new(downLeft, upLeft);
+            Segments<Vector2> upSegments = new(upLeft, upRight);
+            Segments<Vector2> rightSegments = new(upRight, downRight);
+            Segments<Vector2> downSegments = new(downRight, downLeft);
+            Segments<Vector2> leftSegments = new(downLeft, upLeft);
 
-            upLeft.AddSegments(upSegment, leftSegment);
-            upRight.AddSegments(rightSegment, upSegment);
-            downRight.AddSegments(downSegment, rightSegment);
-            downLeft.AddSegments(leftSegment, downSegment);
+            upLeft.AddSegments(upSegments, leftSegments);
+            upRight.AddSegments(rightSegments, upSegments);
+            downRight.AddSegments(downSegments, rightSegments);
+            downLeft.AddSegments(leftSegments, downSegments);
 
-            voronoiPoints.Add(upSegment);
-            voronoiPoints.Add(rightSegment);
-            voronoiPoints.Add(downSegment);
-            voronoiPoints.Add(leftSegment);
+            voronoiPoints.Add(upSegments);
+            voronoiPoints.Add(rightSegments);
+            voronoiPoints.Add(downSegments);
+            voronoiPoints.Add(leftSegments);
 
             voronoiPolygons.Add(center, voronoiPoints);
             voronoiPolygons[center] = voronoiPoints;
@@ -89,7 +89,7 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
         return director;
     }
 
-    public bool LineVectorCollision(Segment<Vector2> seg, Vector2 dir, out Vector2 intersection)
+    public bool LineVectorCollision(Segments<Vector2> seg, Vector2 dir, out Vector2 intersection)
     {
         // Vector2 startPoint = new Vector2(-1, -1);
         Vector2 segDir = seg.end.coord - seg.init.coord;
@@ -122,7 +122,7 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
         return false;
     }
 
-    public bool LineVectorCollision(Vector2 rayOrigin, Vector2 rayDir, Segment<Vector2> seg, out Vector2 intersection)
+    public bool LineVectorCollision(Vector2 rayOrigin, Vector2 rayDir, Segments<Vector2> seg, out Vector2 intersection)
     {
         Vector2 segDir = seg.end.coord - seg.init.coord;
 
@@ -156,34 +156,34 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
         List<Vector2> interceptionPoints = new List<Vector2>();
         List<Point<Vector2>> pointsA = new List<Point<Vector2>>();
         List<Point<Vector2>> pointsB = new List<Point<Vector2>>();
-        List<Segment<Vector2>> polygonA = new(voronoiPolygons[center]);
-        List<Segment<Vector2>> polygonB = new(voronoiPolygons[center]);
+        List<Segments<Vector2>> polygonA = new(voronoiPolygons[center]);
+        List<Segments<Vector2>> polygonB = new(voronoiPolygons[center]);
 
         var t = 10000;
         for (int i = 0; i < voronoiPolygons[center].Count; i++)
         {
-            Segment<Vector2> segment = voronoiPolygons[center][i];
+            Segments<Vector2> segments = voronoiPolygons[center][i];
             //TOdo:Change so the Polygons are created correctly
 
 
             Vector2 inter = INVALID_VALUE;
 
-            if (LineVectorCollision(origin, dir * t, segment, out Vector2 inter1) && inter1 != INVALID_VALUE)
+            if (LineVectorCollision(origin, dir * t, segments, out Vector2 inter1) && inter1 != INVALID_VALUE)
             {
                 inter = inter1;
             }
-            else if (LineVectorCollision(origin, dir * -t, segment, out Vector2 inter2) && inter2 != INVALID_VALUE)
+            else if (LineVectorCollision(origin, dir * -t, segments, out Vector2 inter2) && inter2 != INVALID_VALUE)
             {
                 inter = inter2;
             }
 
             if (inter != INVALID_VALUE)
             {
-                Segment<Vector2> aInter = new Segment<Vector2>(segment.init, new Point<Vector2>(inter));
-                segment.init.Segments[0] = aInter;
+                Segments<Vector2> aInter = new Segments<Vector2>(segments.init, new Point<Vector2>(inter));
+                segments.init.Segments[0] = aInter;
                 aInter.end.Segments.Add(aInter);
-                Segment<Vector2> bInter = new Segment<Vector2>(new Point<Vector2>(inter), segment.end);
-                segment.end.Segments[0] = bInter;
+                Segments<Vector2> bInter = new Segments<Vector2>(new Point<Vector2>(inter), segments.end);
+                segments.end.Segments[0] = bInter;
                 bInter.init.Segments.Add(bInter);
                 polygonA[i] = aInter;
                 polygonB[i] = bInter;
@@ -195,10 +195,10 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
 
         if (interceptionPoints.Count == 2)
         {
-            Segment<Vector2> aInter = new Segment<Vector2>(pointsA[0], pointsA[1]);
+            Segments<Vector2> aInter = new Segments<Vector2>(pointsA[0], pointsA[1]);
             pointsA[0].Segments.Add(aInter);
             pointsA[1].Segments.Add(aInter);
-            Segment<Vector2> bInter = new Segment<Vector2>(pointsB[0], pointsB[1]);
+            Segments<Vector2> bInter = new Segments<Vector2>(pointsB[0], pointsB[1]);
             pointsB[0].Segments.Add(aInter);
             pointsB[1].Segments.Add(aInter);
             polygonA.Add(aInter);
@@ -215,7 +215,7 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
     }
 
 
-    public bool IsPointInPolygon(Vector2 point, List<Segment<Vector2>> polygonSegments)
+    public bool IsPointInPolygon(Vector2 point, List<Segments<Vector2>> polygonSegments)
     {
         int intersectionCount = 0;
         Vector2 dir = new Vector2(1, 0);
@@ -235,12 +235,12 @@ public class Voronoi<NodeType, Coordinate> where NodeType : INode<Coordinate>
         return (intersectionCount % 2 == 1);
     }
 
-    private bool IsPointOnSegment(Segment<Vector2> segment, Vector2 point)
+    private bool IsPointOnSegment(Segments<Vector2> segments, Vector2 point)
     {
-        return Mathf.Min(segment.init.coord.x, segment.end.coord.x) <= point.x
-               && point.x <= Mathf.Max(segment.init.coord.x, segment.end.coord.x)
-               && Mathf.Min(segment.init.coord.y, segment.end.coord.y) <= point.y
-               && point.y <= Mathf.Max(segment.init.coord.y, segment.end.coord.y);
+        return Mathf.Min(segments.init.coord.x, segments.end.coord.x) <= point.x
+               && point.x <= Mathf.Max(segments.init.coord.x, segments.end.coord.x)
+               && Mathf.Min(segments.init.coord.y, segments.end.coord.y) <= point.y
+               && point.y <= Mathf.Max(segments.init.coord.y, segments.end.coord.y);
     }
 }
 
@@ -255,18 +255,18 @@ public class Cell<NodeType, Coordinate> where NodeType : INode<Coordinate> where
     }
 }
 
-public class Segment<Coordinate>
+public class Segments<Coordinate>
 {
     public Point<Coordinate> init;
     public Point<Coordinate> end;
 
-    public Segment(Coordinate init, Coordinate end)
+    public Segments(Coordinate init, Coordinate end)
     {
         this.init = new Point<Coordinate>(init);
         this.end = new Point<Coordinate>(end);
     }
 
-    public Segment(Point<Coordinate> init, Point<Coordinate> end)
+    public Segments(Point<Coordinate> init, Point<Coordinate> end)
     {
         this.init = init;
         this.end = end;
@@ -276,14 +276,14 @@ public class Segment<Coordinate>
 public class Point<Coordinate>
 {
     public Coordinate coord;
-    public List<Segment<Coordinate>> Segments = new List<Segment<Coordinate>>();
+    public List<Segments<Coordinate>> Segments = new List<Segments<Coordinate>>();
 
     public Point(Coordinate coord)
     {
         this.coord = coord;
     }
 
-    public void AddSegments(Segment<Coordinate> segment1, Segment<Coordinate> segment2)
+    public void AddSegments(Segments<Coordinate> segment1, Segments<Coordinate> segment2)
     {
         Segments.Add(segment1);
         Segments.Add(segment2);

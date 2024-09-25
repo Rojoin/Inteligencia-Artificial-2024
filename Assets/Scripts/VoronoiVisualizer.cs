@@ -52,10 +52,10 @@ public class VoronoiVisualizer : MonoBehaviour
         // Iterate through the Voronoi polygons
         foreach (var polygon in voronoi.voronoiPolygons)
         {
-            List<Segment<Vector2>> segments = polygon.Value;
+            List<Segments<Vector2>> segments = polygon.Value;
 
             // Draw each segment of the polygon
-            foreach (Segment<Vector2> segment in segments)
+            foreach (Segments<Vector2> segment in segments)
             {
                 Vector2 start = segment.init.coord;
                 Vector2 end = segment.end.coord;
@@ -78,14 +78,14 @@ public class VoronoiVisualizer : MonoBehaviour
     }
 
     // This function calculates and returns all intersection points from the Voronoi polygons
-    private List<Vector2> CalculateAllIntersections(Dictionary<Node<Vector2>, List<Segment<Vector2>>> voronoiPolygons)
+    private List<Vector2> CalculateAllIntersections(Dictionary<Node<Vector2>, List<Segments<Vector2>>> voronoiPolygons)
     {
         List<Vector2> intersections = new List<Vector2>();
 
         foreach (var polygon in voronoiPolygons)
         {
-            List<Segment<Vector2>> segments = polygon.Value;
-            foreach (Segment<Vector2> segment in segments)
+            List<Segments<Vector2>> segments = polygon.Value;
+            foreach (Segments<Vector2> segment in segments)
             {
                 Vector2 dir = new Vector2(1, 0); // Ray direction (you can adjust this)
                 Vector2 intersection;

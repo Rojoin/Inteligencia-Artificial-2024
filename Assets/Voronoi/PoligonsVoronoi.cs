@@ -1,40 +1,42 @@
+using System;
 using System.Collections.Generic;
-using UnityEditor;
-using UnityEngine;
+
+using System;
+
+
 [System.Serializable]
-public class PoligonsVoronoi
+public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatable<Coord>
+    where SegmentType : Segment<Coord>, new()
 {
     public bool drawPoli;
     public int weight = 0;
-    [SerializeField] private Transform itemSector;
-    [SerializeField] private List<Segment> segments = new List<Segment>();
-    [SerializeField] private List<Segment> limits = new List<Segment>();
-    [SerializeField] private List<Vector2> intersections = new List<Vector2>();
-    [SerializeField] private List<int> indexIntersections = new List<int>();
-    private List<Vector2> allIntersections;
-    private Color colorGizmos = new Color(0, 0, 0, 0);
-    
+     public Coord itemSector;
+     public List<SegmentType> segments = new List<SegmentType>();
+     public List<SegmentType> limits = new List<SegmentType>();
+     public List<Coord> intersections = new List<Coord>();
+     public List<int> indexIntersections = new List<int>();
+
+    protected List<Coord> allIntersections;
+   
+
     public void SortSegment() => segments.Sort((p1, p2) => p1.Distance.CompareTo(p2.Distance));
 
-    public PoligonsVoronoi(Transform item, List<Vector2> allIntersections)
+    public PoligonsVoronoi(Coord item, List<Coord> allIntersections)
     {
         itemSector = item;
         this.allIntersections = allIntersections;
     }
 
-    public void AddSegment(Segment refSegment)
+    public void AddSegment(SegmentType refSegment)
     {
-        Segment segment = new Segment(refSegment.Origin, refSegment.Final);
+        SegmentType segment = new SegmentType();
+        segment.AddNewSegment(refSegment.Origin, refSegment.Final);
         segments.Add(segment);
     }
 
     public void SetIntersections()
     {
-        colorGizmos.r = Random.Range(0, 1.0f);
-        colorGizmos.g = Random.Range(0, 1.0f);
-        colorGizmos.b = Random.Range(0, 1.0f);
-        colorGizmos.a = 0.3f;
-
+        
         intersections.Clear();
         weight = 0;
 
@@ -49,14 +51,15 @@ public class PoligonsVoronoi
                 if (segments[i].id == segments[j].id)
                     continue;
 
-                segments[i].GetTwoPoints(out Vector2 p1, out Vector2 p2);
-                segments[j].GetTwoPoints(out Vector2 p3, out Vector2 p4);
-                Vector2 centerCircle = Segment.Intersection(p1, p2, p3, p4);
+                segments[i].GetTwoPoints(out Coord p1, out Coord p2);
+                segments[j].GetTwoPoints(out Coord p3, out Coord p4);
+
+                Coord centerCircle = segments[i].Intersection(p1, p2, p3, p4);
 
                 if (intersections.Contains(centerCircle))
                     continue;
 
-                float maxDistance = Vector2.Distance(centerCircle, segments[i].Origin);
+                float maxDistance = GetDistance(centerCircle, segments[i].Origin);
 
                 bool hasOtherPoint = false;
                 for (int k = 0; k < segments.Count; k++)
@@ -83,28 +86,17 @@ public class PoligonsVoronoi
         SortPointsPolygon();
     }
 
-    public void AddSegmentsWithLimits(List<SegmentLimit> limits)
-    {
-        foreach (SegmentLimit limit in limits)
-        {
-            Vector2 origin = itemSector.transform.position; // Convert to Vector2
-            Vector2 final = limit.GetOpositePosition(origin); // Convert to Vector2
+    public abstract void AddSegmentsWithLimits(List<SegmentLimit> limits);
 
-            Segment segment = new Segment(origin, final);
-            this.limits.Add(segment);
-            segments.Add(segment);
-        }
-    }
-
-    private bool HasOtherPointInCircle(Vector2 centerCircle, Segment segment, float maxDistance)
+    private bool HasOtherPointInCircle(Coord centerCircle, SegmentType segment, float maxDistance)
     {
-        float distance = Vector2.Distance(centerCircle, segment.Final);
+        float distance = GetDistance(centerCircle, segment.Final);
         return distance < maxDistance;
     }
 
-    void RemoveUnusedSegments()
+    protected void RemoveUnusedSegments()
     {
-        List<Segment> segmentsUnused = new List<Segment>();
+        List<SegmentType> segmentsUnused = new List<SegmentType>();
         for (int i = 0; i < segments.Count; i++)
         {
             if (segments[i].intersection.Count != 2)
@@ -117,14 +109,14 @@ public class PoligonsVoronoi
         }
     }
 
-    void SortPointsPolygon()
+    protected  void SortPointsPolygon()
     {
         intersections.Clear();
-        Vector2 lastIntersection = segments[0].intersection[0];
+        Coord lastIntersection = segments[0].intersection[0];
         intersections.Add(lastIntersection);
 
-        Vector2 firstIntersection;
-        Vector2 secondIntersection;
+        Coord firstIntersection;
+        Coord secondIntersection;
 
         for (int i = 0; i < segments.Count; i++)
         {
@@ -137,7 +129,7 @@ public class PoligonsVoronoi
                 secondIntersection = segments[j].intersection[1];
 
                 if (!intersections.Contains(secondIntersection))
-                    if (firstIntersection == lastIntersection)
+                    if (firstIntersection.Equals( lastIntersection))
                     {
                         intersections.Add(secondIntersection);
                         lastIntersection = secondIntersection;
@@ -145,7 +137,7 @@ public class PoligonsVoronoi
                     }
 
                 if (!intersections.Contains(firstIntersection))
-                    if (secondIntersection == lastIntersection)
+                    if (secondIntersection.Equals( lastIntersection))
                     {
                         intersections.Add(firstIntersection);
                         lastIntersection = firstIntersection;
@@ -164,7 +156,7 @@ public class PoligonsVoronoi
         indexIntersections.Clear();
         for (int i = 0; i < intersections.Count; i++)
         {
-            Vector2 intersection = intersections[i];
+            Coord intersection = intersections[i];
             if (!allIntersections.Contains(intersection))
             {
                 allIntersections.Add(intersection);
@@ -174,7 +166,7 @@ public class PoligonsVoronoi
             {
                 for (int j = 0; j < allIntersections.Count; j++)
                 {
-                    if (allIntersections[j] == intersection)
+                    if (allIntersections[j].Equals(intersection))
                     {
                         indexIntersections.Add(j);
                         break;
@@ -186,7 +178,7 @@ public class PoligonsVoronoi
         UpdateIntersectionList();
     }
 
-    void UpdateIntersectionList()
+    protected  void UpdateIntersectionList()
     {
         intersections.Clear();
 
@@ -196,62 +188,13 @@ public class PoligonsVoronoi
         }
     }
 
-    public void DrawPoli(bool drawPolis)
-    {
-        if (drawPolis)
-            DrawPolygon();
-        else if (drawPoli)
-            DrawPolygon();
-    }
+    public abstract void DrawPoly();
 
-    void DrawPolygon()
-    {
-        Vector3[] points = new Vector3[intersections.Count + 1];
 
-        for (int i = 0; i < intersections.Count; i++)
-        {
-            points[i] = intersections[i];
-        }
 
-        points[intersections.Count] = points[0];
-        Handles.color = colorGizmos;
-        Handles.DrawAAConvexPolygon(points);
+    public abstract bool IsInside(Coord point);
 
-        Handles.color = Color.black;
-        Handles.DrawPolyLine(points);
-    }
-
-    public bool IsInside(Vector2 point)
-    {
-        int length = intersections.Count;
-
-        if (length < 3)
-        {
-            return false;
-        }
-
-        Vector2 extreme = new Vector2(100, point.y); // Adjusted for Vector2
-
-        int count = 0;
-        for (int i = 0; i < length; i++)
-        {
-            int next = (i + 1) % length;
-
-            Vector2 intersection = Segment.Intersection(intersections[i], intersections[next], point, extreme);
-            if (intersection != Vector2.zero)
-                if (IsPointInSegment(intersection, intersections[i], intersections[next]))
-                    if (IsPointInSegment(intersection, point, extreme))
-                        count++;
-        }
-
-        return (count % 2 == 1);
-    }
-
-    public static bool IsPointInSegment(Vector2 point, Vector2 start, Vector2 end)
-    {
-        return (point.x <= Mathf.Max(start.x, end.x) &&
-                point.x >= Mathf.Min(start.x, end.x) &&
-                point.y <= Mathf.Max(start.y, end.y) &&
-                point.y >= Mathf.Min(start.y, end.y));
-    }
+    public abstract float GetDistance(Coord centerCircle, Coord segment);
+    
+    public abstract bool IsPointInSegment(Coord point, Coord start, Coord end);
 }
