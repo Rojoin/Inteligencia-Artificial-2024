@@ -1356,63 +1356,65 @@ MonoBehaviour:
   createSegments: 0
   drawPolis: 1
   intersections:
-  - {x: 2.8, y: 7.662936}
-  - {x: 5.6165156, y: 5.8387156}
-  - {x: 2.7353547, y: -0}
-  - {x: 0, y: -0}
   - {x: 0, y: 6.7462096}
-  - {x: 2.7999997, y: 10}
-  - {x: 2.7999997, y: 7.6629353}
-  - {x: 0, y: 6.74621}
+  - {x: 0, y: -0}
+  - {x: 2.7353547, y: -0}
+  - {x: 5.5547605, y: 5.713568}
+  - {x: 4.667454, y: 8.274344}
   - {x: 0, y: 9.999999}
-  - {x: 2.8, y: 10}
-  - {x: 2.8, y: 7.6629353}
-  - {x: 5.6165156, y: 5.838716}
-  - {x: 10.000001, y: 8.677927}
+  - {x: 0, y: 6.74621}
+  - {x: 4.6674533, y: 8.274344}
+  - {x: 4.9014406, y: 10}
   - {x: 10, y: 10}
-  - {x: 10, y: 8.677927}
-  - {x: 5.6165156, y: 5.838715}
-  - {x: 2.7353544, y: -0}
+  - {x: 5.5547605, y: 5.7135677}
+  - {x: 10, y: 5.4995728}
+  - {x: 10, y: 5.499573}
   - {x: 10, y: -0}
+  - {x: 2.7353544, y: -0}
+  - {x: 5.55476, y: 5.7135673}
   polis:
   - drawPoli: 0
     weight: 0
-    itemSector: {fileID: 348403815}
+    itemSector: {x: 2.35, y: 5.96}
     intersections:
-    - {x: 2.8, y: 7.662936}
-    - {x: 5.6165156, y: 5.8387156}
-    - {x: 2.7353547, y: -0}
-    - {x: 0, y: -0}
     - {x: 0, y: 6.7462096}
+    - {x: 0, y: -0}
+    - {x: 2.7353547, y: -0}
+    - {x: 5.5547605, y: 5.713568}
+    - {x: 4.667454, y: 8.274344}
     indexIntersections: 0000000001000000020000000300000004000000
+    colorGizmos: {r: 0.15564537, g: 0.44851953, b: 0.32938725, a: 0.3}
   - drawPoli: 0
     weight: 0
-    itemSector: {fileID: 1189250772}
+    itemSector: {x: 1.43, y: 8.7699995}
     intersections:
-    - {x: 2.7999997, y: 10}
-    - {x: 2.7999997, y: 7.6629353}
-    - {x: 0, y: 6.74621}
     - {x: 0, y: 9.999999}
+    - {x: 0, y: 6.74621}
+    - {x: 4.6674533, y: 8.274344}
+    - {x: 4.9014406, y: 10}
     indexIntersections: 05000000060000000700000008000000
+    colorGizmos: {r: 0.0637753, g: 0.71624196, b: 0.75474215, a: 0.3}
   - drawPoli: 0
     weight: 0
-    itemSector: {fileID: 1699085766}
+    itemSector: {x: 7.92, y: 7.89}
     intersections:
-    - {x: 2.8, y: 10}
-    - {x: 2.8, y: 7.6629353}
-    - {x: 5.6165156, y: 5.838716}
-    - {x: 10.000001, y: 8.677927}
     - {x: 10, y: 10}
-    indexIntersections: 090000000a0000000b0000000c0000000d000000
+    - {x: 4.9014406, y: 10}
+    - {x: 4.667454, y: 8.274344}
+    - {x: 5.5547605, y: 5.7135677}
+    - {x: 10, y: 5.4995728}
+    indexIntersections: 0900000008000000040000000a0000000b000000
+    colorGizmos: {r: 0.5524232, g: 0.6530001, b: 0.063259244, a: 0.3}
   - drawPoli: 0
     weight: 0
-    itemSector: {fileID: 59294627}
+    itemSector: {x: 7.7, y: 3.32}
     intersections:
-    - {x: 10, y: 8.677927}
-    - {x: 5.6165156, y: 5.838715}
-    - {x: 2.7353544, y: -0}
+    - {x: 10, y: 5.499573}
     - {x: 10, y: -0}
-    indexIntersections: 0e0000000f0000001000000011000000
+    - {x: 2.7353544, y: -0}
+    - {x: 5.55476, y: 5.7135673}
+    indexIntersections: 0c0000000d0000000e0000000f000000
+    colorGizmos: {r: 0.6145124, g: 0.34407538, b: 0.28119177, a: 0.3}
   transformPoints:
   - {fileID: 348403815}
   - {fileID: 1189250772}
@@ -1534,7 +1536,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1464509744}
-  - component: {fileID: 1464509743}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -1542,24 +1543,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1464509743
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1464509742}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11a34aa3cbf64cf09fe162705a4b06aa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  polygonColor: {r: 0.026666641, g: 0, b: 1, a: 1}
-  intersectionColor: {r: 1, g: 0.3596303, b: 0, a: 1}
-  pointSize: 0.1
-  Grapf: {fileID: 815766764}
-  scale: {x: 9, y: 9}
-  a: {fileID: 508323966}
 --- !u!4 &1464509744
 Transform:
   m_ObjectHideFlags: 0
@@ -1886,8 +1869,12 @@ PrefabInstance:
       value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 8830139160470727148, guid: 5fab2c8899e76214abe3461192ef1671, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 7.92
+      objectReference: {fileID: 0}
+    - target: {fileID: 8830139160470727148, guid: 5fab2c8899e76214abe3461192ef1671, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 8.7699995
+      value: 7.89
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 1542941091784813573, guid: 5fab2c8899e76214abe3461192ef1671, type: 3}
