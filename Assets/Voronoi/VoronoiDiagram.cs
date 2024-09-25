@@ -1,67 +1,103 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
-[ExecuteAlways]
+
 public class VoronoiDiagram : MonoBehaviour
 {
-    public bool createSegments;
     public bool drawPolis;
 
     [SerializeField] private List<Vector2> intersections = new List<Vector2>();
     [Space(15), SerializeField]
-    private List<ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2>> polis =
-        new List<ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2>>();
-    [SerializeField] private List<Transform> transformPoints = new List<Transform>();
+    private List<ThiessenPolygon2D<SegmentVec2, Vector2>> polis =
+        new List<ThiessenPolygon2D<SegmentVec2, Vector2>>();
     [SerializeField] private List<SegmentLimit> segmentLimit = new List<SegmentLimit>();
     [SerializeField]
-    private Dictionary<ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2>, Color> polyColors =
-        new Dictionary<ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2>, Color>();
+    private Dictionary<ThiessenPolygon2D<SegmentVec2, Vector2>, Color> polyColors =
+        new Dictionary<ThiessenPolygon2D<SegmentVec2, Vector2>, Color>();
+    [SerializeField] private List<Vector2> pointsToCheck = new List<Vector2>();
+    private Dictionary<Vector2, List<SegmentVec2>> weight = new();
 
-    public List<ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2>> GetPoly => polis;
+    public List<ThiessenPolygon2D<SegmentVec2, Vector2>> GetPoly => polis;
+    public GrapfView graph;
+    public GameObject test;
 
     public void AddNewItem(Transform item)
     {
-        transformPoints.Add(item);
+        // transformPoints.Add(item);
         CreateSegments();
     }
 
     public void RemoveItem(Transform item)
     {
-        transformPoints.Remove(item);
+        // transformPoints.Remove(item);
+        CreateSegments();
+    }
+
+    private IEnumerator Start()
+    {
+        yield return null;
+        yield return null;
+        yield return null;
+        yield return null;
+        yield return null;
+        yield return null;
+
+        foreach (var Node in graph.graph.mines)
+        {
+            pointsToCheck.Add(Node.GetCoordinate());
+        }
+
         CreateSegments();
     }
 
     private void Update()
     {
-        if (createSegments)
+        if (test != null)
         {
-            createSegments = false;
-            CreateSegments();
+            Vector2 testPos = new Vector2(test.transform.position.x, test.transform.position.y);
+            foreach (ThiessenPolygon2D<SegmentVec2, Vector2> VARIABLE in polis)
+            {
+                if (VARIABLE.IsInside(testPos))
+                {
+                    Debug.Log($"The Object is inside the poly: {VARIABLE.itemSector}");
+                }
+
+                VARIABLE.IsInside(testPos);
+            }
         }
     }
 
+    [ContextMenu("CreateSegment")]
     private void CreateSegments()
     {
-        //Todo: Change transfroms to nodes
-        if (transformPoints == null)
+        pointsToCheck.Clear();
+        foreach (var Node in graph.graph.mines)
+        {
+            pointsToCheck.Add(Node.GetCoordinate());
+        }
+
+        if (pointsToCheck == null)
             return;
-        if (transformPoints.Count < 1)
+        if (pointsToCheck.Count < 1)
             return;
 
-        SegmentVec2<Vector2>.amountSegments = 0;
+        SegmentVec2.amountSegments = 0;
         polis.Clear();
         intersections.Clear();
-          polyColors.Clear();
-         
-        for (int i = 0; i < transformPoints.Count; i++)
+        polyColors.Clear();
+
+        for (int i = 0; i < pointsToCheck.Count; i++)
         {
-            ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2> poli =
-                new ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2>(transformPoints[i].position, intersections);
+            ThiessenPolygon2D<SegmentVec2, Vector2> poli =
+                new ThiessenPolygon2D<SegmentVec2, Vector2>(pointsToCheck[i], intersections,0.5f);
             polis.Add(poli);
-            poli.colorGizmos.r = Random.Range(0,1.0f);
-            poli.colorGizmos.g = Random.Range(0,1.0f);
-            poli.colorGizmos.b = Random.Range(0,1.0f);
+            poli.colorGizmos.r = Random.Range(0, 1.0f);
+            poli.colorGizmos.g = Random.Range(0, 1.0f);
+            poli.colorGizmos.b = Random.Range(0, 1.0f);
             poli.colorGizmos.a = 0.3f;
         }
 
@@ -70,14 +106,14 @@ public class VoronoiDiagram : MonoBehaviour
             polis[i].AddSegmentsWithLimits(segmentLimit);
         }
 
-        for (int i = 0; i < transformPoints.Count; i++)
+        for (int i = 0; i < pointsToCheck.Count; i++)
         {
-            for (int j = 0; j < transformPoints.Count; j++)
+            for (int j = 0; j < pointsToCheck.Count; j++)
             {
                 if (i == j)
                     continue;
-                SegmentVec2<Vector2> segment =
-                    new SegmentVec2<Vector2>(transformPoints[i].position, transformPoints[j].position);
+                SegmentVec2 segment =
+                    new SegmentVec2(pointsToCheck[i], pointsToCheck[j], 0.5f);
                 polis[i].AddSegment(segment);
             }
         }
@@ -86,47 +122,124 @@ public class VoronoiDiagram : MonoBehaviour
         {
             polis[i].SetIntersections();
         }
-
         SetWeightPoligons();
     }
 
     private void SetWeightPoligons()
     {
-        // int allWeight = 0;
-        // for (int i = 0; i < NodeGenerator.GetMap.Length; i++)
-        // {
-        //     if (IsNodeOutsideLimits(NodeGenerator.GetMap[i]))
-        //         continue;
-        //
-        //     allWeight += NodeGenerator.GetMap[i].weight;
-        //
-        //     for (int j = 0; j < polis.Count; j++)
-        //     {
-        //         if (polis[j].IsInside(NodeGenerator.GetMap[i].position))
-        //         {
-        //             polis[j].weight += NodeGenerator.GetMap[i].weight;
-        //             break;
-        //         }
-        //     }
-        // }
+        float allWeight = 0;
+        for (int i = 0; i < graph.graph.nodes.Count; i++)
+        {
+            allWeight += graph.graph.nodes[i].GetWeight();
 
-        // for (int i = 0; i < polis.Count; i++)
-        //     Debug.Log("Weight " + i + ": " + polis[i].weight);
-        //
-        // Debug.Log("Total Weight Polis: " + allWeight);
+            for (int j = 0; j < polis.Count; j++)
+            {
+                if (polis[j].IsInside(graph.graph.nodes[i].GetCoordinate()))
+                {
+                    polis[j].weight += graph.graph.nodes[i].GetWeight();
+                    break;
+                }
+            }
+        }
+
+    
     }
 
-    // bool IsNodeOutsideLimits (Node node)
-    // {
-    //     Vector3 origin = segmentLimit[0].Origin;
-    //     Vector3 final = segmentLimit[2].Origin;
-    //     Vector3 point = node.position;
-    //
-    //     return !(point.x > origin.x &&
-    //              point.z > origin.z &&
-    //              point.x < final.x &&
-    //              point.z < final.z);
-    // }
+    private void CreateWeightedSegments()
+    {
+        weight.Clear();
+        foreach (Vector2 vector2 in pointsToCheck)
+        {
+            weight.Add(vector2,new List<SegmentVec2>());
+        }
+        for (int i = 0; i < polis.Count; i++)
+        {
+            for (int j = 0; j < polis.Count; j++)
+            {
+                if (i == j)
+                {
+                    continue;
+                }
+                
+
+                float weightA = polis[i].weight;
+                float weightB = polis[j].weight;
+                float totalWeight = weightA + weightB;
+                float percentaje = 0.5f;
+                if (weightA >= weightB)
+                {
+                    percentaje = weightA / totalWeight;
+                }
+                else if (weightA < weightB)
+                {
+                    percentaje = weightB / totalWeight;
+                }
+
+                SegmentVec2 weightedSegment = new SegmentVec2(pointsToCheck[i], pointsToCheck[j], percentaje);
+                   
+                if (weight.TryGetValue(pointsToCheck[i], out var value))
+                {
+                    value.Add(weightedSegment);
+                }
+            }
+        }
+    }
+[ContextMenu("Create WeightedVornoid")]
+    private void CreateWeightedVoronoid()
+    {
+        CreateWeightedSegments();
+        if (polis == null)
+            return;
+        if (polis.Count < 1)
+            return;
+
+        SegmentVec2.amountSegments = 0;
+        polis.Clear();
+        intersections.Clear();
+        polyColors.Clear();
+
+        for (int i = 0; i < pointsToCheck.Count; i++)
+        {
+            ThiessenPolygon2D<SegmentVec2, Vector2> poli =
+                new ThiessenPolygon2D<SegmentVec2, Vector2>(pointsToCheck[i], intersections);
+            polis.Add(poli);
+            poli.colorGizmos.r = Random.Range(0, 1.0f);
+            poli.colorGizmos.g = Random.Range(0, 1.0f);
+            poli.colorGizmos.b = Random.Range(0, 1.0f);
+            poli.colorGizmos.a = 0.3f;
+        }
+
+        for (int i = 0; i < polis.Count; i++)
+        {
+            polis[i].AddSegmentsWithLimits(segmentLimit);
+        }
+
+        for (int i = 0; i < pointsToCheck.Count; i++)
+        {
+            for (int j = 0; j < weight[pointsToCheck[i]].Count; j++)
+            {
+                polis[i].AddSegment(weight[pointsToCheck[i]][j]);
+            }
+        }
+
+        for (int i = 0; i < polis.Count; i++)
+        {
+            polis[i].SetIntersections();
+        }
+        SetWeightPoligons();
+    }
+
+    bool IsNodeOutsideLimits(Node<Vector2> node)
+    {
+        Vector2 origin = segmentLimit[0].Origin;
+        Vector2 final = segmentLimit[2].Origin;
+        Vector2 point = node.GetCoordinate();
+
+        return !(point.x > origin.x &&
+                 point.y > origin.y &&
+                 point.x < final.x &&
+                 point.y < final.y);
+    }
 
 #if UNITY_EDITOR
 
@@ -139,7 +252,7 @@ public class VoronoiDiagram : MonoBehaviour
     {
         if (polis != null)
         {
-            foreach (ThiessenPolygon2D<SegmentVec2<Vector2>, Vector2> poli in polis)
+            foreach (ThiessenPolygon2D<SegmentVec2, Vector2> poli in polis)
             {
                 if (poli.drawPoli || drawPolis)
                 {

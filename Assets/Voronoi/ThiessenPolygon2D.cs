@@ -4,10 +4,10 @@ using UnityEditor;
 using UnityEngine;
 
 [System.Serializable]
-public class ThiessenPolygon2D<SegmentType, Coord> : PoligonsVoronoi<SegmentVec2<Vector2>, Vector2>
+public class ThiessenPolygon2D<SegmentType, Coord> : PoligonsVoronoi<SegmentVec2, Vector2>
     where SegmentType : Segment<Vector2>, new() where Coord : IEquatable<Vector2>
 {
-    public ThiessenPolygon2D(Vector2 item, List<Vector2> allIntersections) : base(item, allIntersections)
+    public ThiessenPolygon2D(Vector2 item, List<Vector2> allIntersections,float mediatrix = defaultMediatrix) : base(item, allIntersections,mediatrix)
     {
     }
 
@@ -17,11 +17,11 @@ public class ThiessenPolygon2D<SegmentType, Coord> : PoligonsVoronoi<SegmentVec2
     {
         foreach (SegmentLimit limit in limits)
         {
-            Vector2 origin = itemSector; // Convert to Vector2
-            Vector2 final = limit.GetOpositePosition(origin); // Convert to Vector2
+            Vector2 origin = itemSector; 
+            Vector2 final = limit.GetOpositePosition(origin); 
 
-            SegmentVec2<Vector2> segment = new SegmentVec2<Vector2>();
-            segment.AddNewSegment(origin, final);
+            SegmentVec2 segment = new SegmentVec2();
+            segment.AddNewSegment(origin, final,relationOfMediatrix);
             this.limits.Add(segment);
             segments.Add(segment);
         }
@@ -53,17 +53,17 @@ public class ThiessenPolygon2D<SegmentType, Coord> : PoligonsVoronoi<SegmentVec2
             return false;
         }
 
-        Vector2 extreme = new Vector2(100, point.y); // Adjusted for Vector2
+        Vector2 extreme = new Vector2(100, point.y); 
 
         int count = 0;
         for (int i = 0; i < length; i++)
         {
             int next = (i + 1) % length;
             SegmentType intersectionChecker = new SegmentType();
-            intersectionChecker.AddNewSegment(Vector2.zero, Vector2.zero);
+            intersectionChecker.AddNewSegment(Vector2.zero, Vector2.zero,relationOfMediatrix);
             Vector2 intersection =
                 intersectionChecker.Intersection(intersections[i], intersections[next], point, extreme);
-            if (intersection.Equals(Vector2.zero))
+            if (!intersection.Equals(Vector2.zero))
                 if (IsPointInSegment(intersection, intersections[i], intersections[next]))
                     if (IsPointInSegment(intersection, point, extreme))
                         count++;

@@ -5,8 +5,7 @@ using UnityEngine.Serialization;
 
 public class GrapfView : MonoBehaviour
 {
-
-  [FormerlySerializedAs("grapf")] public Vector2Graph<Node<Vector2>> graph;
+    [FormerlySerializedAs("grapf")] public Vector2Graph<Node<Vector2>> graph;
     [SerializeField] private Sprite grass;
     [SerializeField] private Sprite rock;
     [SerializeField] private Sprite mine;
@@ -15,9 +14,11 @@ public class GrapfView : MonoBehaviour
     private CaravanFazade _caravanFazade = new CaravanFazade();
     private List<GameObject> _tiles = new List<GameObject>();
     public GameObject tile;
+    public int mines = 3;
     public int nodesX = 3;
     public int nodesY = 3;
     public float offset = 3;
+
     [ContextMenu("Generate Map")]
     void OnEnable()
     {
@@ -28,7 +29,7 @@ public class GrapfView : MonoBehaviour
 
     private void CreateGraph()
     {
-        graph = new Vector2Graph<Node<Vector2>>(nodesX, nodesY,offset);
+        graph = new Vector2Graph<Node<Vector2>>(nodesX, nodesY, offset,mines);
         // AStarPathfinder<Node<Vector2>, Vector2> test = new AStarPathfinder<Node<Vector2>, Vector2>();
         // List<Node<Vector2>> findPath = test.FindPath(graph.nodes[0],graph.nodes[^1],graph,_caravanFazade);
         // if (findPath == null||findPath.Count < 0)
@@ -39,7 +40,6 @@ public class GrapfView : MonoBehaviour
 
     private void DrawMap(Vector2IntGrapf<Node<Vector2Int>> vector2IntGrapf)
     {
-
     }
 
 
@@ -49,10 +49,19 @@ public class GrapfView : MonoBehaviour
         {
             foreach (GameObject var in _tiles)
             {
-                Destroy(var);
+                if (Application.isEditor && !Application.isPlaying)
+                {
+                    DestroyImmediate(var);
+                }
+                else
+                {
+                    Destroy(var);
+                }
             }
+
             _tiles.Clear();
         }
+
         foreach (Node<Vector2> node in graph.nodes)
         {
             var position = new Vector3(node.GetCoordinate().x, node.GetCoordinate().y);
@@ -100,6 +109,7 @@ public class GrapfView : MonoBehaviour
         // }
     }
 }
+
 public class CaravanFazade : ITraveler
 {
     public virtual bool CanTravelNode(NodeTravelType type)

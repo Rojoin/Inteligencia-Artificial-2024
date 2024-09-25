@@ -15,10 +15,12 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
     private System.Random random = new System.Random();
     private CaravanFazade _caravanFazade = new();
     public List<NodeType> mines = new List<NodeType>();
+    public int mineQuantity = 1;
 
-    public Vector2Graph(int x, int y, float offSet)
+    public Vector2Graph(int x, int y, float offSet, int mineQuantity)
     {
         int counter = 0;
+        this.mineQuantity = Mathf.Clamp(mineQuantity, 1, (x * y) - y);
         nodesMatrix = new NodeType[x, y];
         for (int i = 0; i < x; i++)
         {
@@ -26,7 +28,7 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
             {
                 NodeType node = new NodeType();
                 node.SetID(counter++);
-                node.SetCoordinate(new UnityEngine.Vector2(i * offSet, j * offSet));
+                node.SetCoordinate(new UnityEngine.Vector2(1 + i * offSet, 1 + j * offSet));
                 nodes.Add(node);
                 nodesMatrix[i, j] = node;
             }
@@ -77,9 +79,10 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
         HumanCenter<NodeType, Vector2> humanCenter = (HumanCenter<NodeType, UnityEngine.Vector2>)nodes[0].GetPlace();
         humanCenter.SetGraph(this);
         humanCenter.SetNode(nodes[0]);
-        SetRandomMine(humanCenter);
-        SetRandomMine(humanCenter);
-        SetRandomMine(humanCenter);
+        for (int i = 0; i < mineQuantity; i++)
+        {
+            SetRandomMine(humanCenter);
+        }
         // SetRandomMine(humanCenter);
         //SetRandomMine(humanCenter);
     }

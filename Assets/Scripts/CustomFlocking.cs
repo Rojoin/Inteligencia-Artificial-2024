@@ -27,7 +27,6 @@ public class CustomFlocking : MonoBehaviour
     [ContextMenu("StopAlarm")]
     public void StopAlarm()
     {
-      
         foreach (IAlarmable agent in alarmables)
         {
             agent.InvokeAlarmOFf();
@@ -42,8 +41,7 @@ public class CustomFlocking : MonoBehaviour
             boid.Init(Alignment, Cohesion, Separation, Direction);
             SetBoidParams(boid);
             boids.Add(boid);
-            // VARIABLE.onAlarmRaised += RaiseAlarm;
-            // VARIABLE.onAlarmStop += StopAlarm;
+
         }
         
     }

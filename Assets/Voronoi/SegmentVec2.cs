@@ -1,11 +1,11 @@
 using System;
 using UnityEngine;
 
-public class SegmentVec2<Coord> : Segment<Vector2> where Coord : IEquatable<Vector2>
+public class SegmentVec2 : Segment<Vector2> 
 {
-    public SegmentVec2(Vector2 newOrigin, Vector2 newFinal) : base(newOrigin,newFinal)
+    public SegmentVec2(Vector2 newOrigin, Vector2 newFinal,float relationOfMediatrix) : base(newOrigin,newFinal)
     {
-        AddNewSegment(newOrigin, newFinal);
+        AddNewSegment(newOrigin, newFinal,relationOfMediatrix);
     }    
     public SegmentVec2() : base()
     {
@@ -23,7 +23,7 @@ public class SegmentVec2<Coord> : Segment<Vector2> where Coord : IEquatable<Vect
         float denominator = ((ap1.x - ap2.x) * (bp1.y - bp2.y) - (ap1.y - ap2.y) * (bp1.x - bp2.x));
 
         if (denominator == 0)
-            return Vector2.zero; // Lines are parallel
+            return Vector2.zero; 
 
         float numeradorX = ((ap1.x * ap2.y - ap1.y * ap2.x) * (bp1.x - bp2.x) - (ap1.x - ap2.x) * (bp1.x * bp2.y - bp1.y * bp2.x));
         float numeradorY = ((ap1.x * ap2.y - ap1.y * ap2.x) * (bp1.y - bp2.y) - (ap1.y - ap2.y) * (bp1.x * bp2.y - bp1.y * bp2.x));
@@ -32,20 +32,20 @@ public class SegmentVec2<Coord> : Segment<Vector2> where Coord : IEquatable<Vect
         return intersection;
     }
 
-    public override void AddNewSegment(Vector2 newOrigin, Vector2 newFinal)
+    public override void AddNewSegment(Vector2 newOrigin, Vector2 newFinal, float persentageOfDistance)
     {
         id = amountSegments;
         amountSegments++;
         origin = newOrigin;
         final = newFinal;
-     
+        this.persentageOfDistance = persentageOfDistance;
         distance =  Mathf.Sqrt(Mathf.Pow(Mathf.Abs(origin.x - final.x), 2) +
                                Mathf.Pow(Mathf.Abs(origin.y - final.y), 2));
 
-        mediatrix = (origin + final) / 2;
+        mediatrix = (origin + final) * persentageOfDistance;
 
         direction = (final - origin).normalized;
-        Vector2 perpendicular = new Vector2(-direction.y, direction.x); // Perpendicular in 2D
-        direction = perpendicular; // Set direction to be the perpendicular
+        Vector2 perpendicular = new Vector2(-direction.y, direction.x);
+        direction = perpendicular; 
     }
 }

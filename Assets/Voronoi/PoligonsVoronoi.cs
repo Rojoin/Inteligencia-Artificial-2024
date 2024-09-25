@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using System;
 
 
@@ -9,34 +8,36 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
     where SegmentType : Segment<Coord>, new()
 {
     public bool drawPoli;
-    public int weight = 0;
-     public Coord itemSector;
-     public List<SegmentType> segments = new List<SegmentType>();
-     public List<SegmentType> limits = new List<SegmentType>();
-     public List<Coord> intersections = new List<Coord>();
-     public List<int> indexIntersections = new List<int>();
-
+    public float weight = 0;
+    public float relationOfMediatrix = 0;
+    public Coord itemSector;
+    public List<SegmentType> segments = new List<SegmentType>();
+    public List<SegmentType> limits = new List<SegmentType>();
+    public List<Coord> intersections = new List<Coord>();
+    public List<int> indexIntersections = new List<int>();
+    public const float defaultMediatrix = 0.5f;
     protected List<Coord> allIntersections;
-   
+
 
     public void SortSegment() => segments.Sort((p1, p2) => p1.Distance.CompareTo(p2.Distance));
 
-    public PoligonsVoronoi(Coord item, List<Coord> allIntersections)
+    
+    public PoligonsVoronoi(Coord item, List<Coord> allIntersections, float relationOfMediatrix = defaultMediatrix)
     {
         itemSector = item;
         this.allIntersections = allIntersections;
+        this.relationOfMediatrix = defaultMediatrix;
     }
 
     public void AddSegment(SegmentType refSegment)
     {
         SegmentType segment = new SegmentType();
-        segment.AddNewSegment(refSegment.Origin, refSegment.Final);
+        segment.AddNewSegment(refSegment.Origin, refSegment.Final, refSegment.persentageOfDistance);
         segments.Add(segment);
     }
 
     public void SetIntersections()
     {
-        
         intersections.Clear();
         weight = 0;
 
@@ -108,50 +109,64 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
             segments.Remove(segmentsUnused[i]);
         }
     }
+    public bool hasSameSegment(PoligonsVoronoi<SegmentType, Coord> otherPoly)
+    {
+        foreach (SegmentType segmentType in segments)
+        {
+            foreach (var seg in otherPoly.segments)
+            {
+                if (seg.Equals(segmentType))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
-    protected  void SortPointsPolygon()
+    protected void SortPointsPolygon()
     {
         intersections.Clear();
+
+
         Coord lastIntersection = segments[0].intersection[0];
         intersections.Add(lastIntersection);
-
-        Coord firstIntersection;
-        Coord secondIntersection;
 
         for (int i = 0; i < segments.Count; i++)
         {
             for (int j = 0; j < segments.Count; j++)
             {
-                if (i == j)
-                    continue;
+                if (i == j) continue;
 
-                firstIntersection = segments[j].intersection[0];
-                secondIntersection = segments[j].intersection[1];
+                Coord firstIntersection = segments[j].intersection[0];
+                Coord secondIntersection = segments[j].intersection[1];
 
-                if (!intersections.Contains(secondIntersection))
-                    if (firstIntersection.Equals( lastIntersection))
-                    {
-                        intersections.Add(secondIntersection);
-                        lastIntersection = secondIntersection;
-                        break;
-                    }
 
-                if (!intersections.Contains(firstIntersection))
-                    if (secondIntersection.Equals( lastIntersection))
-                    {
-                        intersections.Add(firstIntersection);
-                        lastIntersection = firstIntersection;
-                        break;
-                    }
+                if (lastIntersection.Equals(firstIntersection) && !intersections.Contains(secondIntersection))
+                {
+                    intersections.Add(secondIntersection);
+                    lastIntersection = secondIntersection;
+                    break;
+                }
+
+                if (lastIntersection.Equals(secondIntersection) && !intersections.Contains(firstIntersection))
+                {
+                    intersections.Add(firstIntersection);
+                    lastIntersection = firstIntersection;
+                    break;
+                }
             }
         }
 
-        firstIntersection = segments[^1].intersection[0];
-        if (!intersections.Contains(firstIntersection))
-            intersections.Add(firstIntersection);
-        secondIntersection = segments[^1].intersection[1];
-        if (!intersections.Contains(secondIntersection))
-            intersections.Add(secondIntersection);
+
+        Coord firstIntersectionInLastSegment = segments[^1].intersection[0];
+        if (!intersections.Contains(firstIntersectionInLastSegment))
+            intersections.Add(firstIntersectionInLastSegment);
+
+        Coord secondIntersectionInLastSegment = segments[^1].intersection[1];
+        if (!intersections.Contains(secondIntersectionInLastSegment))
+            intersections.Add(secondIntersectionInLastSegment);
+
 
         indexIntersections.Clear();
         for (int i = 0; i < intersections.Count; i++)
@@ -164,21 +179,14 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
             }
             else
             {
-                for (int j = 0; j < allIntersections.Count; j++)
-                {
-                    if (allIntersections[j].Equals(intersection))
-                    {
-                        indexIntersections.Add(j);
-                        break;
-                    }
-                }
+                indexIntersections.Add(allIntersections.IndexOf(intersection));
             }
         }
 
         UpdateIntersectionList();
     }
 
-    protected  void UpdateIntersectionList()
+    protected void UpdateIntersectionList()
     {
         intersections.Clear();
 
@@ -190,11 +198,9 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
 
     public abstract void DrawPoly();
 
-
-
     public abstract bool IsInside(Coord point);
 
     public abstract float GetDistance(Coord centerCircle, Coord segment);
-    
+
     public abstract bool IsPointInSegment(Coord point, Coord start, Coord end);
 }
