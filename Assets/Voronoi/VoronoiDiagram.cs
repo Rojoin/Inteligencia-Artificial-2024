@@ -19,11 +19,12 @@ public class VoronoiDiagram : MonoBehaviour
     private Dictionary<ThiessenPolygon2D<SegmentVec2, Vector2>, Color> polyColors =
         new Dictionary<ThiessenPolygon2D<SegmentVec2, Vector2>, Color>();
     [SerializeField] private List<Vector2> pointsToCheck = new List<Vector2>();
-    private Dictionary<Vector2, List<SegmentVec2>> weight = new();
+    private Dictionary<(Vector2,Vector2), float> weight = new();
 
     public List<ThiessenPolygon2D<SegmentVec2, Vector2>> GetPoly => polis;
     public GrapfView graph;
     public GameObject test;
+  
 
     public void AddNewItem(Transform item)
     {
@@ -50,7 +51,14 @@ public class VoronoiDiagram : MonoBehaviour
         {
             pointsToCheck.Add(Node.GetCoordinate());
         }
-
+        weight.Clear();
+        foreach (Vector2 point in pointsToCheck)
+        {
+            foreach (Vector2 otherPoint in pointsToCheck)
+            {
+                weight.Add((point, otherPoint), 0.5f);
+            }
+        }
         CreateSegments();
     }
 
@@ -148,9 +156,13 @@ public class VoronoiDiagram : MonoBehaviour
     private void CreateWeightedSegments()
     {
         weight.Clear();
-        foreach (Vector2 vector2 in pointsToCheck)
+        foreach (Vector2 point in pointsToCheck)
         {
-            weight.Add(vector2,new List<SegmentVec2>());
+            foreach (Vector2 otherPoint in pointsToCheck)
+            {
+            weight.Add((point,otherPoint),0.5f);
+                
+            }
         }
         for (int i = 0; i < polis.Count; i++)
         {
@@ -175,12 +187,15 @@ public class VoronoiDiagram : MonoBehaviour
                     percentaje = weightB / totalWeight;
                 }
 
-                SegmentVec2 weightedSegment = new SegmentVec2(pointsToCheck[i], pointsToCheck[j], percentaje);
-                   
-                if (weight.TryGetValue(pointsToCheck[i], out var value))
+
+                if (weight.TryGetValue((pointsToCheck[i],pointsToCheck[j]), out var value))
                 {
-                    value.Add(weightedSegment);
+                    weight[(pointsToCheck[i], pointsToCheck[j])] = percentaje;
+                    weight[(pointsToCheck[j], pointsToCheck[i])] = percentaje;
                 }
+                
+                weight[(pointsToCheck[i], pointsToCheck[j])] = percentaje;
+                weight[(pointsToCheck[j], pointsToCheck[i])] = percentaje;
             }
         }
     }
@@ -213,14 +228,21 @@ public class VoronoiDiagram : MonoBehaviour
         {
             polis[i].AddSegmentsWithLimits(segmentLimit);
         }
-
+        
+        
         for (int i = 0; i < pointsToCheck.Count; i++)
         {
-            for (int j = 0; j < weight[pointsToCheck[i]].Count; j++)
+            for (int j = 0; j < pointsToCheck.Count; j++)
             {
-                polis[i].AddSegment(weight[pointsToCheck[i]][j]);
+                if (i == j)
+                    continue;
+                float relationOfMediatrix = weight[(pointsToCheck[i],pointsToCheck[j])];
+                SegmentVec2 segment =
+                    new SegmentVec2(pointsToCheck[i], pointsToCheck[j], relationOfMediatrix);
+                polis[i].AddSegment(segment);
             }
         }
+
 
         for (int i = 0; i < polis.Count; i++)
         {

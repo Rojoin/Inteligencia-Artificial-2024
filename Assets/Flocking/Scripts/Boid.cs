@@ -48,6 +48,7 @@ public class BoidAgent
     public float separationWeight = 2;
     public Transform parent;
     public Vector3 objective;
+    public Vector3 position;
     private Func<BoidAgent, Vector3> Alignment;
     private Func<BoidAgent, Vector3> Cohesion;
     private Func<BoidAgent, Vector3> Separation;
