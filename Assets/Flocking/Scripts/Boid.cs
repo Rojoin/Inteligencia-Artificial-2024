@@ -54,6 +54,10 @@ public class BoidAgent
     private Func<BoidAgent, Vector3> Separation;
     private Func<BoidAgent, Vector3> Direction;
 
+    private Vector3 aligment;
+    private Vector3 cohesion;
+    private Vector3 separation;
+    private Vector3 direction;
     public void Init(Func<BoidAgent, Vector3> Alignment,
         Func<BoidAgent, Vector3> Cohesion,
         Func<BoidAgent, Vector3> Separation,
@@ -64,13 +68,20 @@ public class BoidAgent
         this.Separation = Separation;
         this.Direction = Direction;
     }
+    public void SetACS(Vector3 aligment,Vector3 cohesion,Vector3 separation,Vector3 direction)
+    {
+        this.aligment = aligment;
+        this.cohesion = cohesion;
+        this.separation = separation;
+        this.direction = direction;
+    }
 
     public Vector3 ACS()
     {
-        Vector3 ACS = Alignment(this) * aligmentWeight + Cohesion(this) * cohesionWeight +
-                      Separation(this) * separationWeight + Direction(this);
+        Vector3 ACS = aligment * aligmentWeight + cohesion * cohesionWeight +
+                      separation * separationWeight + direction;
 
         return new Vector2(ACS.x, ACS.y).normalized;
-        ;
+
     }
 }

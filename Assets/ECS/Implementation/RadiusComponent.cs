@@ -4,9 +4,8 @@ public class RadiusComponent : ECSComponent
 {
     public float radius;
 
-    public RadiusComponent(List<Boid> nearBoids, float radius)
+    public RadiusComponent( float radius)
     {
-     
         this.radius = radius;
     }
 }

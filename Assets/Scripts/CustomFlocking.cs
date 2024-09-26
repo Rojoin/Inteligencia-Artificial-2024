@@ -29,7 +29,7 @@ public class CustomFlocking : MonoBehaviour
     {
         foreach (IAlarmable agent in alarmables)
         {
-            agent.InvokeAlarmOFf();
+            agent.InvokeAlarmOff();
         }
     }
     private void Start()

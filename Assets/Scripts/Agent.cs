@@ -268,5 +268,5 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
 
     public void InvokeAlarmOn() => onAlarmRaised.Invoke();
 
-    public void InvokeAlarmOFf() => onAlarmStop.Invoke();
+    public void InvokeAlarmOff() => onAlarmStop.Invoke();
 }

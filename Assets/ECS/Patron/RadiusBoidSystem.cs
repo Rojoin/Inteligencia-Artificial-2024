@@ -8,7 +8,6 @@ public class RadiusBoidSystem : ECSSystem
     private IDictionary<uint, RadiusComponent> nearBoidsComponents;
     private IDictionary<uint, PositionComponent> positionComponents;
     private IEnumerable<uint> queryedEntities;
-    private IDictionary<uint, List<uint>> nearBoids;
 
     public override void Initialize()
     {
@@ -33,6 +32,6 @@ public class RadiusBoidSystem : ECSSystem
 
     protected override void PostExecute(float deltaTime)
     {
-        throw new System.NotImplementedException();
+       
     }
 }

@@ -15,5 +15,5 @@ public interface IFlock
 public interface IAlarmable
 {
     public void InvokeAlarmOn();
-    public void InvokeAlarmOFf();
+    public void InvokeAlarmOff();
 }

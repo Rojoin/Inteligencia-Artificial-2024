@@ -53,10 +53,6 @@ public static class ECSManager
             system.Value.Run(deltaTime);
         });
         
-        // foreach (var VARIABLE in COLLECTION)
-        // {
-        //     
-        // }
     }
 
     public static uint CreateEntity()

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -10,11 +11,12 @@ public class CohesionSystem : ECSSystem
     private IDictionary<uint, RadiusComponent> radiusComponents;
     private IDictionary<uint, CohesionComponent> cohesionComponents;
     private IEnumerable<uint> queryedEntities;
-    private IDictionary<uint, List<uint>> nearBoids;
+    private IDictionary<uint, ConcurrentBag<uint>> nearBoids;
 
     public override void Initialize()
     {
         parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 32 };
+        nearBoids = new Dictionary<uint, ConcurrentBag<uint>>();
     }
 
     protected override void PreExecute(float deltaTime)
@@ -29,7 +31,7 @@ public class CohesionSystem : ECSSystem
 
         Parallel.ForEach(queryedEntities, parallelOptions, i =>
         {
-            List<uint> insideRadiusBoids = new List<uint>();
+            ConcurrentBag<uint> insideRadiusBoids = new ConcurrentBag<uint>();
 
             Parallel.ForEach(queryedEntities, parallelOptions, j =>
             {

@@ -62,6 +62,17 @@ public sealed class SeparationComponent : Vector3Component
     {
     }
 }
+public sealed class DirectionComponent : Vector3Component
+{
+    public DirectionComponent(float X, float Y, float Z) : base(X, Y, Z)
+    {
+    }
+}public sealed class ObjectiveComponent : Vector3Component
+{
+    public ObjectiveComponent(float X, float Y, float Z) : base(X, Y, Z)
+    {
+    }
+}
 public sealed class FowardComponent : Vector3Component
 {
     public FowardComponent(float X, float Y, float Z) : base(X, Y, Z)

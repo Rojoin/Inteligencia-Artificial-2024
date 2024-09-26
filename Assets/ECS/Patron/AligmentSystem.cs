@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -12,11 +13,12 @@ public class AligmentSystem : ECSSystem
     private IDictionary<uint, SpeedComponent> speedComponents;
     private IDictionary<uint, AlignmentComponent> alignmentComponents;
     private IEnumerable<uint> queryedEntities;
-    private IDictionary<uint, List<uint>> nearBoids;
+    private IDictionary<uint, ConcurrentBag<uint>> nearBoids;
 
     public override void Initialize()
     {
         parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 32 };
+        nearBoids = new Dictionary<uint, ConcurrentBag<uint>>();
     }
 
     protected override void PreExecute(float deltaTime)
@@ -25,6 +27,7 @@ public class AligmentSystem : ECSSystem
         fowardComponents ??= ECSManager.GetComponents<FowardComponent>();
         alignmentComponents ??= ECSManager.GetComponents<AlignmentComponent>();
         positionComponents ??= ECSManager.GetComponents<PositionComponent>();
+        speedComponents ??= ECSManager.GetComponents<SpeedComponent>();
         queryedEntities ??=
             ECSManager.GetEntitiesWhitComponentTypes(typeof(RadiusComponent), typeof(PositionComponent),typeof(SpeedComponent),typeof(FowardComponent),
                 typeof(AlignmentComponent));
@@ -68,7 +71,7 @@ public class AligmentSystem : ECSSystem
     {
         Parallel.ForEach(queryedEntities, parallelOptions, i =>
         {
-            List<uint> insideRadiusBoids = new List<uint>();
+            ConcurrentBag<uint> insideRadiusBoids = new ConcurrentBag<uint>();
 
             Parallel.ForEach(queryedEntities, parallelOptions, j =>
             {
