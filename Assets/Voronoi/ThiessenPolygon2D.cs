@@ -16,6 +16,14 @@ public class ThiessenPolygon2D<SegmentType, Coord> : PoligonsVoronoi<SegmentVec2
 
     public Color colorGizmos;
 
+    protected override bool IsInvalid(Vector2 intersection)
+    {
+        if (intersection.Equals(INVALID_VALUE) || intersection.Equals(Vector2.positiveInfinity) ||
+            intersection.Equals(Vector2.negativeInfinity) || float.IsNaN(intersection.x) || float.IsNaN(intersection.y))
+            return true;
+        return false;
+    }
+
     public override void AddSegmentsWithLimits(List<SegmentLimit> limits)
     {
         foreach (SegmentLimit limit in limits)
@@ -94,10 +102,10 @@ public class ThiessenPolygon2D<SegmentType, Coord> : PoligonsVoronoi<SegmentVec2
         intersections.RemoveAll(p => p.y > 15);
         intersections.RemoveAll(p => p.y < -15);
         intersections.RemoveAll(p => p.y < -15);
-         Vector2 centroid = new Vector2(intersections.Average(p => p.x), intersections.Average(p => p.y));
-         intersections = intersections.OrderBy(p => Mathf.Atan2(p.y - centroid.y, p.x - centroid.x)).ToList();
+        Vector2 centroid = new Vector2(intersections.Average(p => p.x), intersections.Average(p => p.y));
+        intersections = intersections.OrderBy(p => Mathf.Atan2(p.y - centroid.y, p.x - centroid.x)).ToList();
 
-return;
+        return;
 
         indexIntersections.Clear();
 

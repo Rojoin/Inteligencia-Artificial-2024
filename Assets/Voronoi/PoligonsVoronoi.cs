@@ -62,8 +62,8 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
                 segments[j].GetTwoPoints(out Coord p3, out Coord p4);
 
                 Coord intersection = segments[i].Intersection(p1, p2, p3, p4);
-                 if (intersection.Equals(INVALID_VALUE)) 
-                     continue;
+                 if (IsInvalid(intersection)) continue;
+             
                 //Todo:Check for wrong point
                 if (intersections.Contains(intersection))
                     continue;
@@ -95,6 +95,8 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
         SortPointsPolygon();
     }
 
+    protected abstract bool IsInvalid(Coord intersection);
+
     public abstract void AddSegmentsWithLimits(List<SegmentLimit> limits);
 
     private bool HasOtherPointInCircle(Coord centerCircle, SegmentType segment, float maxDistance)
@@ -121,7 +123,7 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
     {
         for (int index = 0; index < intersections.Count; index++)
         {
-            for (int j = 0; j < otherPoly.segments.Count; j++)
+            for (int j = 0;  j < otherPoly.segments.Count; j++)
             {
                 if (otherPoly.intersections[j].Equals(intersections[index]))
                 {

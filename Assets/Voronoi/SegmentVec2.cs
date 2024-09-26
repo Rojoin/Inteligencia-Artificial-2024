@@ -15,7 +15,7 @@ public class SegmentVec2 : Segment<Vector2>
     public override void GetTwoPoints(out Vector2 p1, out Vector2 p2)
     {
         p1 = mediatrix;
-        p2 = mediatrix + direction * 10;
+        p2 = mediatrix + direction * 40000;
     }
 
     public override Vector2 Intersection(Vector2 ap1, Vector2 ap2, Vector2 bp1, Vector2 bp2)
@@ -43,7 +43,7 @@ public class SegmentVec2 : Segment<Vector2>
                                Mathf.Pow(Mathf.Abs(origin.y - final.y), 2));
 
         float a = 1;
-        
+        mediatrix = (origin + final) * persentageOfDistance;
         //mediatrix = origin * (a - persentageOfDistance)+ final * persentageOfDistance;
        mediatrix = Vector2.Lerp(origin, final, persentageOfDistance);
 

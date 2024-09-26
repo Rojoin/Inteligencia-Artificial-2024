@@ -3,13 +3,15 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 public class CohesionSystem : ECSSystem
-{    private ParallelOptions parallelOptions;
+{
+    private ParallelOptions parallelOptions;
 
     private IDictionary<uint, PositionComponent> positionComponents;
     private IDictionary<uint, RadiusComponent> radiusComponents;
     private IDictionary<uint, CohesionComponent> cohesionComponents;
     private IEnumerable<uint> queryedEntities;
     private IDictionary<uint, List<uint>> nearBoids;
+
     public override void Initialize()
     {
         parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 32 };
@@ -21,9 +23,10 @@ public class CohesionSystem : ECSSystem
         cohesionComponents ??= ECSManager.GetComponents<CohesionComponent>();
         positionComponents ??= ECSManager.GetComponents<PositionComponent>();
         queryedEntities ??=
-            ECSManager.GetEntitiesWhitComponentTypes(typeof(RadiusComponent), typeof(PositionComponent),typeof(AlignmentComponent));
-        
-        
+            ECSManager.GetEntitiesWhitComponentTypes(typeof(RadiusComponent), typeof(PositionComponent),
+                typeof(CohesionComponent));
+
+
         Parallel.ForEach(queryedEntities, parallelOptions, i =>
         {
             List<uint> insideRadiusBoids = new List<uint>();
@@ -33,8 +36,8 @@ public class CohesionSystem : ECSSystem
                 if (positionComponents[i] != positionComponents[j])
                 {
                     float distance = Mathf.Abs(positionComponents[i].X - positionComponents[j].X) +
-                                     Mathf.Abs(positionComponents[i].Y - positionComponents[i].Y) +
-                                     Mathf.Abs(positionComponents[i].Z - positionComponents[i].Z);
+                                     Mathf.Abs(positionComponents[i].Y - positionComponents[j].Y) +
+                                     Mathf.Abs(positionComponents[i].Z - positionComponents[j].Z);
                     if (distance < radiusComponents[i].radius)
                     {
                         insideRadiusBoids.Add(j);
@@ -51,23 +54,36 @@ public class CohesionSystem : ECSSystem
     {
         Parallel.ForEach(queryedEntities, parallelOptions, i =>
         {
-            Vector3 avg = Vector3.zero;
+            cohesionComponents[i].X = 0;
+            cohesionComponents[i].Y = 0;
+            cohesionComponents[i].Z = 0;
             Parallel.ForEach(nearBoids, parallelOptions, j =>
             {
                 cohesionComponents[i].X += positionComponents[j.Key].X;
-                cohesionComponents[i].Y += positionComponents[j.Key].X;
-                cohesionComponents[i].Z += positionComponents[j.Key].X;
+                cohesionComponents[i].Y += positionComponents[j.Key].Y;
+                cohesionComponents[i].Z += positionComponents[j.Key].Z;
             });
+
+            Vector3 avg = Vector3.zero;
             
+            avg.x = cohesionComponents[i].X;
+            avg.y = cohesionComponents[i].Y;
+            avg.z = cohesionComponents[i].Z;
             
             avg /= nearBoids.Count;
             
+            avg.x -= positionComponents[i].X;
+            avg.y -= positionComponents[i].Y;
+            avg.z -= positionComponents[i].Z;
             avg.Normalize();
+            
+            cohesionComponents[i].X = avg.x;
+            cohesionComponents[i].Y = avg.y;
+            cohesionComponents[i].Z = avg.z;
         });
     }
 
     protected override void PostExecute(float deltaTime)
     {
-   
     }
 }

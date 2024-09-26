@@ -26,7 +26,8 @@ public class AligmentSystem : ECSSystem
         alignmentComponents ??= ECSManager.GetComponents<AlignmentComponent>();
         positionComponents ??= ECSManager.GetComponents<PositionComponent>();
         queryedEntities ??=
-            ECSManager.GetEntitiesWhitComponentTypes(typeof(RadiusComponent), typeof(PositionComponent),typeof(AlignmentComponent));
+            ECSManager.GetEntitiesWhitComponentTypes(typeof(RadiusComponent), typeof(PositionComponent),typeof(SpeedComponent),typeof(FowardComponent),
+                typeof(AlignmentComponent));
         AddRadius();
     }
 
@@ -34,26 +35,33 @@ public class AligmentSystem : ECSSystem
     {
         Parallel.ForEach(queryedEntities, parallelOptions, i =>
         {
-            
             Vector3 avg = Vector3.zero;
-
+            alignmentComponents[i].X = 0;
+            alignmentComponents[i].Y = 0;
+            alignmentComponents[i].Z = 0;
             Parallel.ForEach(nearBoids, parallelOptions, j =>
             {
                 alignmentComponents[i].X += fowardComponents[j.Key].X * speedComponents[j.Key].X;
                 alignmentComponents[i].Y += fowardComponents[j.Key].Y * speedComponents[j.Key].X;
                 alignmentComponents[i].Z += fowardComponents[j.Key].Z * speedComponents[j.Key].X;
             });
-            
-            
+
+            avg.x = alignmentComponents[i].X;
+            avg.y = alignmentComponents[i].Y;
+            avg.z = alignmentComponents[i].Z;
+
             avg /= nearBoids.Count;
-            
+
             avg.Normalize();
+
+            alignmentComponents[i].X = avg.x;
+            alignmentComponents[i].Y = avg.y;
+            alignmentComponents[i].Z = avg.z;
         });
     }
 
     protected override void PostExecute(float deltaTime)
     {
-  
     }
 
     private void AddRadius()
@@ -67,8 +75,8 @@ public class AligmentSystem : ECSSystem
                 if (positionComponents[i] != positionComponents[j])
                 {
                     float distance = Mathf.Abs(positionComponents[i].X - positionComponents[j].X) +
-                                     Mathf.Abs(positionComponents[i].Y - positionComponents[i].Y) +
-                                     Mathf.Abs(positionComponents[i].Z - positionComponents[i].Z);
+                                     Mathf.Abs(positionComponents[i].Y - positionComponents[j].Y) +
+                                     Mathf.Abs(positionComponents[i].Z - positionComponents[j].Z);
                     if (distance < radiusComponents[i].radius)
                     {
                         insideRadiusBoids.Add(j);

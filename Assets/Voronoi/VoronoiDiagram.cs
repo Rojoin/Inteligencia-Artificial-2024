@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-
+[ExecuteAlways]
 public class VoronoiDiagram : MonoBehaviour
 {
     public bool drawPolis;
@@ -179,7 +179,7 @@ public class VoronoiDiagram : MonoBehaviour
         {
             float totalNeighborWeight = 0f;
 
-            // First pass: Calculate total weight of neighbors for polygon 'i'
+       
             for (int j = 0; j < polis.Count; j++)
             {
                 if (i == j || !polis[i].hasSameSegment(polis[j]))
@@ -187,7 +187,7 @@ public class VoronoiDiagram : MonoBehaviour
                     continue;
                 }
 
-                // Add the weight of the neighboring polygon 'j' to the total
+         
                 totalNeighborWeight += polis[j].weight;
             }
 
@@ -208,18 +208,18 @@ public class VoronoiDiagram : MonoBehaviour
                 float weightA = polis[i].weight;
                 float weightB = polis[j].weight;
 
-                // Calculate percentage of influence relative to total neighbor weight
+        
                 float percentajePolyA = weightA / (weightA + totalNeighborWeight);
                 float percentajePolyB = weightB / (weightB + totalNeighborWeight);
 
-                // Ensure the percentages sum up to 1
+ 
                 float totalPercentage = percentajePolyA + percentajePolyB;
                 percentajePolyA /= totalPercentage;
                 percentajePolyB /= totalPercentage;
 
-                // Assign the calculated percentages to the weight dictionary
-                weight.TryAdd((pointsToCheck[i], pointsToCheck[j]), percentajePolyA);
-                weight.TryAdd((pointsToCheck[j], pointsToCheck[i]), percentajePolyB);
+       
+                weight.TryAdd((pointsToCheck[i], pointsToCheck[j]), percentajePolyB);
+                weight.TryAdd((pointsToCheck[j], pointsToCheck[i]), percentajePolyA);
             }
         }
     }

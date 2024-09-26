@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
+
 
 public abstract class Segment<Coord> : IEquatable<Segment<Coord>>
 {
@@ -8,13 +8,13 @@ public abstract class Segment<Coord> : IEquatable<Segment<Coord>>
     public int id = 0;
     public bool isLimit;
 
-    [SerializeField] protected Coord origin;
-    [SerializeField] protected Coord final;
+     public Coord origin;
+     public Coord final;
 
-    [SerializeField] protected Coord direction;
-    [SerializeField] protected Coord mediatrix;
-    [SerializeField]  protected float distance;
-    [SerializeField]  public float persentageOfDistance;
+     public Coord direction;
+     public Coord mediatrix;
+     public float distance;
+      public float persentageOfDistance;
 
     public List<Coord> intersection = new List<Coord>();
 
