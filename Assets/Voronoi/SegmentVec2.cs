@@ -23,7 +23,7 @@ public class SegmentVec2 : Segment<Vector2>
         float denominator = ((ap1.x - ap2.x) * (bp1.y - bp2.y) - (ap1.y - ap2.y) * (bp1.x - bp2.x));
 
         if (denominator == 0)
-            return Vector2.zero; 
+            return new Vector2(-1, -1);; 
 
         float numeradorX = ((ap1.x * ap2.y - ap1.y * ap2.x) * (bp1.x - bp2.x) - (ap1.x - ap2.x) * (bp1.x * bp2.y - bp1.y * bp2.x));
         float numeradorY = ((ap1.x * ap2.y - ap1.y * ap2.x) * (bp1.y - bp2.y) - (ap1.y - ap2.y) * (bp1.x * bp2.y - bp1.y * bp2.x));

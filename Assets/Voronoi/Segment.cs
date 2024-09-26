@@ -32,8 +32,7 @@ public abstract class Segment<Coord>
     public float Distance => distance;
 
     public abstract void GetTwoPoints(out Coord p1, out Coord p2);
-
-
+    
     public abstract Coord Intersection(Coord ap1, Coord ap2, Coord bp1, Coord bp2);
 
     public abstract void AddNewSegment(Coord newOrigin, Coord newFinal, float persentageOfDistance);

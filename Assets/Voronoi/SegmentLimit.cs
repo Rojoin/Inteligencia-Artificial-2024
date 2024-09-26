@@ -15,8 +15,9 @@ public class SegmentLimit
     public Vector2 GetOpositePosition(Vector2 pos)
     {
         Vector2 newPos = Vector2.zero;
+        
         float distanceX = Mathf.Abs(Mathf.Abs(pos.x) - Mathf.Abs(origin.position.x)) * 2;
-        float distanceY = Mathf.Abs(Mathf.Abs(pos.y) - Mathf.Abs(origin.position.y)) * 2; // Changed z to y for Vector2
+        float distanceY = Mathf.Abs(Mathf.Abs(pos.y) - Mathf.Abs(origin.position.y)) * 2; 
 
         switch (directionLimit)
         {

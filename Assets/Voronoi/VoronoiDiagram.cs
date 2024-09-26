@@ -18,13 +18,15 @@ public class VoronoiDiagram : MonoBehaviour
     [SerializeField]
     private Dictionary<ThiessenPolygon2D<SegmentVec2, Vector2>, Color> polyColors =
         new Dictionary<ThiessenPolygon2D<SegmentVec2, Vector2>, Color>();
+    
+    
     [SerializeField] private List<Vector2> pointsToCheck = new List<Vector2>();
-    private Dictionary<(Vector2,Vector2), float> weight = new();
+    private Dictionary<(Vector2, Vector2), float> weight = new();
 
     public List<ThiessenPolygon2D<SegmentVec2, Vector2>> GetPoly => polis;
     public GrapfView graph;
     public GameObject test;
-  
+
 
     public void AddNewItem(Transform item)
     {
@@ -51,6 +53,8 @@ public class VoronoiDiagram : MonoBehaviour
         {
             pointsToCheck.Add(Node.GetCoordinate());
         }
+
+        weight = new Dictionary<(Vector2, Vector2), float>();
         weight.Clear();
         foreach (Vector2 point in pointsToCheck)
         {
@@ -59,6 +63,7 @@ public class VoronoiDiagram : MonoBehaviour
                 weight.Add((point, otherPoint), 0.5f);
             }
         }
+
         CreateSegments();
     }
 
@@ -101,7 +106,7 @@ public class VoronoiDiagram : MonoBehaviour
         for (int i = 0; i < pointsToCheck.Count; i++)
         {
             ThiessenPolygon2D<SegmentVec2, Vector2> poli =
-                new ThiessenPolygon2D<SegmentVec2, Vector2>(pointsToCheck[i], intersections,0.5f);
+                new ThiessenPolygon2D<SegmentVec2, Vector2>(pointsToCheck[i], intersections, 0.5f);
             polis.Add(poli);
             poli.colorGizmos.r = Random.Range(0, 1.0f);
             poli.colorGizmos.g = Random.Range(0, 1.0f);
@@ -130,6 +135,7 @@ public class VoronoiDiagram : MonoBehaviour
         {
             polis[i].SetIntersections();
         }
+
         SetWeightPoligons();
     }
 
@@ -150,7 +156,7 @@ public class VoronoiDiagram : MonoBehaviour
             }
         }
 
-    
+        CreateWeightedSegments();
     }
 
     private void CreateWeightedSegments()
@@ -160,10 +166,10 @@ public class VoronoiDiagram : MonoBehaviour
         {
             foreach (Vector2 otherPoint in pointsToCheck)
             {
-            weight.Add((point,otherPoint),0.5f);
-                
+                weight.Add((point, otherPoint), 0.5f);
             }
         }
+
         for (int i = 0; i < polis.Count; i++)
         {
             for (int j = 0; j < polis.Count; j++)
@@ -173,33 +179,32 @@ public class VoronoiDiagram : MonoBehaviour
                     continue;
                 }
                 
-
                 float weightA = polis[i].weight;
                 float weightB = polis[j].weight;
                 float totalWeight = weightA + weightB;
                 float percentaje = 0.5f;
                 if (weightA >= weightB)
                 {
-                    percentaje = weightA / totalWeight;
+                    percentaje = weightB / totalWeight;
                 }
                 else if (weightA < weightB)
                 {
-                    percentaje = weightB / totalWeight;
+                    percentaje = weightA / totalWeight;
                 }
 
 
-                if (weight.TryGetValue((pointsToCheck[i],pointsToCheck[j]), out var value))
+                if (weight.TryGetValue((pointsToCheck[i], pointsToCheck[j]), out var value))
                 {
                     weight[(pointsToCheck[i], pointsToCheck[j])] = percentaje;
-                    weight[(pointsToCheck[j], pointsToCheck[i])] = percentaje;
                 }
-                
+
                 weight[(pointsToCheck[i], pointsToCheck[j])] = percentaje;
                 weight[(pointsToCheck[j], pointsToCheck[i])] = percentaje;
             }
         }
     }
-[ContextMenu("Create WeightedVornoid")]
+
+    [ContextMenu("Create WeightedVornoid")]
     private void CreateWeightedVoronoid()
     {
         CreateWeightedSegments();
@@ -228,15 +233,15 @@ public class VoronoiDiagram : MonoBehaviour
         {
             polis[i].AddSegmentsWithLimits(segmentLimit);
         }
-        
-        
+
+
         for (int i = 0; i < pointsToCheck.Count; i++)
         {
             for (int j = 0; j < pointsToCheck.Count; j++)
             {
                 if (i == j)
                     continue;
-                float relationOfMediatrix = weight[(pointsToCheck[i],pointsToCheck[j])];
+                float relationOfMediatrix = weight[(pointsToCheck[i], pointsToCheck[j])];
                 SegmentVec2 segment =
                     new SegmentVec2(pointsToCheck[i], pointsToCheck[j], relationOfMediatrix);
                 polis[i].AddSegment(segment);
@@ -248,6 +253,7 @@ public class VoronoiDiagram : MonoBehaviour
         {
             polis[i].SetIntersections();
         }
+
         SetWeightPoligons();
     }
 

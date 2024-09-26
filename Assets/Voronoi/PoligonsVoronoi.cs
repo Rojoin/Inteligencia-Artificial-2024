@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 
 
+
 [System.Serializable]
 public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatable<Coord>
     where SegmentType : Segment<Coord>, new()
@@ -17,11 +18,16 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
     public List<int> indexIntersections = new List<int>();
     public const float defaultMediatrix = 0.5f;
     protected List<Coord> allIntersections;
+    public static Coord INVALID_VALUE;
 
 
-    public void SortSegment() => segments.Sort((p1, p2) => p1.Distance.CompareTo(p2.Distance));
+    public void SortSegment()
+    {
+         segments.Sort((p1, p2) => p1.Distance.CompareTo(p2.Distance));
+        //
+    }
 
-    
+
     public PoligonsVoronoi(Coord item, List<Coord> allIntersections, float relationOfMediatrix = defaultMediatrix)
     {
         itemSector = item;
@@ -55,19 +61,21 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
                 segments[i].GetTwoPoints(out Coord p1, out Coord p2);
                 segments[j].GetTwoPoints(out Coord p3, out Coord p4);
 
-                Coord centerCircle = segments[i].Intersection(p1, p2, p3, p4);
-
-                if (intersections.Contains(centerCircle))
+                Coord intersection = segments[i].Intersection(p1, p2, p3, p4);
+                 if (intersection.Equals(INVALID_VALUE)) 
+                     continue;
+                //Todo:Check for wrong point
+                if (intersections.Contains(intersection))
                     continue;
 
-                float maxDistance = GetDistance(centerCircle, segments[i].Origin);
+                float maxDistance = GetDistance(intersection, segments[i].Origin);
 
                 bool hasOtherPoint = false;
                 for (int k = 0; k < segments.Count; k++)
                 {
                     if (k == i || k == j)
                         continue;
-                    if (HasOtherPointInCircle(centerCircle, segments[k], maxDistance))
+                    if (HasOtherPointInCircle(intersection, segments[k], maxDistance))
                     {
                         hasOtherPoint = true;
                         break;
@@ -76,9 +84,9 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
 
                 if (!hasOtherPoint)
                 {
-                    intersections.Add(centerCircle);
-                    segments[i].intersection.Add(centerCircle);
-                    segments[j].intersection.Add(centerCircle);
+                    intersections.Add(intersection);
+                    segments[i].intersection.Add(intersection);
+                    segments[j].intersection.Add(intersection);
                 }
             }
         }
@@ -124,7 +132,8 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
         return false;
     }
 
-    protected void SortPointsPolygon()
+    protected abstract void SortPointsPolygon(bool value);
+    protected virtual void SortPointsPolygon()
     {
         intersections.Clear();
 
@@ -188,12 +197,12 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
 
     protected void UpdateIntersectionList()
     {
-        intersections.Clear();
-
-        for (int i = 0; i < indexIntersections.Count; i++)
-        {
-            intersections.Add(allIntersections[indexIntersections[i]]);
-        }
+        // intersections.Clear();
+        //
+        // for (int i = 0; i < indexIntersections.Count; i++)
+        // {
+        //     intersections.Add(allIntersections[indexIntersections[i]]);
+        // }
     }
 
     public abstract void DrawPoly();
