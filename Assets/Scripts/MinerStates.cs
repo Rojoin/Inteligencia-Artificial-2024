@@ -39,6 +39,7 @@ namespace Miner
             Action<Node<Vector2>> setCurrentMine = parameters[6] as Action<Node<Vector2>>;
             isAlarmOn = Convert.ToBoolean(parameters[7]);
             var goldToRetrieve = parameters[8] as Action<int>;
+            Vector3 currentPos = (Vector3) parameters[9];
             BehaviourActions behaviour = new BehaviourActions();
             behaviour.SetTransitionBehavior(() =>
             {
@@ -55,11 +56,11 @@ namespace Miner
                         OnFlag.Invoke(MinerFlags.OnStartMining);
                     }
                 }
-                else if (place is HumanCenter<Node<Vector2>, Vector2> humanCenter)
+                else if (place is HumanCenter2D humanCenter)
                 {
                     if (!isAlarmOn)
                     {
-                        path = humanCenter.GetNewDestination(traveler);
+                        path = humanCenter.GetNewDestination(traveler,currentPos);
                         setDestination(path[0].GetCoordinate());
                         modifyPath.Invoke(path);
                         setCurrentMine.Invoke(path[^1]);
@@ -153,6 +154,7 @@ namespace Miner
                 }
                 else if (!mine.hasGold)
                 {
+                    mine.TryGetGold();
                     OnFlag.Invoke(MinerFlags.OnGoingToMine);
                 }
                 else if (energy <= 0)

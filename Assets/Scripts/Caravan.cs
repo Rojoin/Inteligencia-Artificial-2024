@@ -142,7 +142,7 @@ public class Caravan : MonoBehaviour, ITraveler, IFlock,IAlarmable
         fsm.SetTransition(MinerStates.Idle, MinerFlags.OnGoingToMine, MinerStates.Travel,
             () =>
             {
-                path = (humanCenterNode.GetPlace() as HumanCenter<Node<Vector2>, Vector2>).GetNewDestination(this);
+                path = (humanCenterNode.GetPlace() as HumanCenter<Node<Vector2>, Vector2>).GetNewDestination(this,new Vector2(transform.position.x,transform.position.y));
                 currentNode = path[^1];
                 SetObjective(path[0].GetCoordinate());
                 food = 10;

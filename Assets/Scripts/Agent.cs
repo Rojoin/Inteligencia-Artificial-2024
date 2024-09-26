@@ -94,7 +94,8 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
                 {
                     setEnergy = a => energy = a, currentNode, path, this, setPath = list => path = list,
                     setObjective = SetObjective, setNodeObjective = node => currentObjective = node, isAlarmOn,
-                    setGold = g => gold = g
+                    setGold = g => gold = g,
+                    transform.position
                 };
             },
             onExitParametes: () => new object[]
@@ -166,6 +167,14 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
             () =>
             {
                 path = PathFinderManager<Node<Vector2>, Vector2>.GetPath(humanCenterNode, currentNode, this);
+                path.Reverse();
+                // boid.objective = path[^1].GetCoordinate();
+            }); 
+        fsm.SetTransition(MinerStates.Mining, MinerFlags.OnGoingToMine, MinerStates.Travel,
+            () =>
+            {
+                path = ((HumanCenter2D)humanCenterNode.GetPlace()).GetNewDestination(this,currentNode, transform.position);
+                // path = PathFinderManager<Node<Vector2>, Vector2>.GetPath(humanCenterNode, currentNode, this);
                 path.Reverse();
                 // boid.objective = path[^1].GetCoordinate();
             });

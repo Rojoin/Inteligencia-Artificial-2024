@@ -43,7 +43,7 @@ namespace ECS.Example
         {
             if (Application.isPlaying)
             {
-                if (entities != null || entities.Count > 0)
+                if (entities?.Count > 0)
                 {
                     foreach (KeyValuePair<uint, Agent> entity in entities)
 

@@ -7,26 +7,27 @@ using Debug = System.Diagnostics.Debug;
 using Random = UnityEngine.Random;
 
 [Serializable]
-public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
+public class Vector2Graph<NodeType> : IGraph<Node<Vector2>, UnityEngine.Vector2>
     where NodeType : class, INode<UnityEngine.Vector2>, INode, new()
 {
-    public List<NodeType> nodes = new List<NodeType>();
-    public NodeType[,] nodesMatrix;
+    public List<Node<Vector2>> nodes = new List<Node<Vector2>>();
+    public Node<Vector2>[,] nodesMatrix;
     private System.Random random = new System.Random();
     private CaravanFazade _caravanFazade = new();
-    public List<NodeType> mines = new List<NodeType>();
+    public List<Node<Vector2>> mines = new List<Node<Vector2>>();
     public int mineQuantity = 1;
+    private VoronoiDiagram diagram;
 
-    public Vector2Graph(int x, int y, float offSet, int mineQuantity)
+    public Vector2Graph(int x, int y, float offSet, int mineQuantity, VoronoiDiagram diagram)
     {
         int counter = 0;
         this.mineQuantity = Mathf.Clamp(mineQuantity, 1, (x * y) - y);
-        nodesMatrix = new NodeType[x, y];
+        nodesMatrix = new Node<Vector2>[x, y];
         for (int i = 0; i < x; i++)
         {
             for (int j = 0; j < y; j++)
             {
-                NodeType node = new NodeType();
+                Node<Vector2> node = new Node<Vector2>();
                 node.SetID(counter++);
                 node.SetCoordinate(new UnityEngine.Vector2(1 + i * offSet, 1 + j * offSet));
                 nodes.Add(node);
@@ -34,7 +35,8 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
             }
         }
 
-        PathFinderManager<NodeType, Vector2>.graph = this;
+        this.diagram = diagram;
+        PathFinderManager<Node<Vector2>, Vector2>.graph = this;
         SetCardinalConnections(x, y);
         SetRandomType();
         SetRandomHumanCenter();
@@ -42,7 +44,7 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
 
     private void SetRandomType()
     {
-        foreach (NodeType node in nodes)
+        foreach (Node<Vector2> node in nodes)
         {
             int range = Random.Range(0, Enum.GetValues(typeof(NodeTravelType)).Length);
             NodeTravelType nodeTravelType = (NodeTravelType)range;
@@ -74,9 +76,9 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
     {
         nodes[0].SetNodeType(NodeTravelType.HumanCenter);
         nodes[0].SetWeight(0);
-        nodes[0].SetPlace(new HumanCenter<NodeType, UnityEngine.Vector2>());
+        nodes[0].SetPlace(new HumanCenter2D());
         nodes[0].SetBlocked(false);
-        HumanCenter<NodeType, Vector2> humanCenter = (HumanCenter<NodeType, UnityEngine.Vector2>)nodes[0].GetPlace();
+        HumanCenter2D humanCenter = (HumanCenter2D)nodes[0].GetPlace();
         humanCenter.SetGraph(this);
         humanCenter.SetNode(nodes[0]);
         for (int i = 0; i < mineQuantity; i++)
@@ -87,7 +89,7 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
         //SetRandomMine(humanCenter);
     }
 
-    private void SetRandomMine(HumanCenter<NodeType, Vector2> humanCenter)
+    private void SetRandomMine(HumanCenter2D humanCenter)
     {
         int randomNode = Random.Range(0, nodes.Count);
         if (nodes[randomNode].GetPlace() is HumanCenter<NodeType, Vector2> || nodes[randomNode].GetPlace() is Mine)
@@ -101,21 +103,26 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
                 nodeToMine.SetNodeType(NodeTravelType.Mine);
                 nodeToMine.SetWeight(0);
                 nodeToMine.SetBlocked(false);
-                nodeToMine.SetPlace(new Mine());
+                Mine place = new Mine();
+                nodeToMine.SetPlace(place);
                 mines.Add(nodeToMine);
-                humanCenter.AddGoldNode(nodeToMine);
+                humanCenter.AddGoldNode(nodeToMine,place);
+                humanCenter.diagram = diagram;
+
             }
             else
             {
                 SetRandomMine(humanCenter);
             }
         }
+
+        humanCenter.CreateVoronoid();
     }
 
-    private bool CalculatePathToMine(HumanCenter<NodeType, Vector2> humanCenter, NodeType node, out NodeType nodeToAdd)
+    private bool CalculatePathToMine(HumanCenter2D humanCenter, Node<Vector2> node, out Node<Vector2> nodeToAdd)
     {
-        List<NodeType> nodeTypes =
-            PathFinderManager<NodeType, Vector2>.GetPath(humanCenter.currentNode, node, _caravanFazade);
+        List<Node<Vector2>> nodeTypes =
+            PathFinderManager<Node<Vector2>, Vector2>.GetPath(humanCenter.currentNode, node, _caravanFazade);
 
         if (nodeTypes != null && nodeTypes.Count > 0)
         {
@@ -124,7 +131,7 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
         }
         else
         {
-            List<NodeType> nodesOut = new List<NodeType>();
+            List<Node<Vector2>> nodesOut = new List<Node<Vector2>>();
             var previousNode = node;
             nodesOut.Add(node);
 
@@ -138,7 +145,7 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
 
                 foreach (INode<Vector2> neighbor in previousNode.GetNeighbors())
                 {
-                    NodeType nodeToChange = nodes[neighbor.GetID()];
+                    Node<Vector2> nodeToChange = nodes[neighbor.GetID()];
 
                     if (!nodesOut.Contains(nodeToChange))
                     {
@@ -148,7 +155,7 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
                         nodeToChange.SetBlocked(false);
 
                         // Attempt to find a new path after modifying the neighbor
-                        nodeTypes = PathFinderManager<NodeType, Vector2>.GetPath(humanCenter.currentNode, nodeToChange,
+                        nodeTypes = PathFinderManager<Node<Vector2>, Vector2>.GetPath(humanCenter.currentNode, nodeToChange,
                             _caravanFazade);
 
                         if (nodeTypes != null && nodeTypes.Count > 0)
@@ -222,19 +229,19 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
         }
     }
 
-    public float GetManhattanDistance(NodeType a, NodeType b)
+    public float GetManhattanDistance(Node<Vector2> a, Node<Vector2> b)
     {
         return Mathf.Abs(a.GetCoordinate().x - b.GetCoordinate().x) +
                Mathf.Abs(a.GetCoordinate().y - b.GetCoordinate().y);
     }
 
-    public float GetEuclideanDistance(NodeType a, NodeType b)
+    public float GetEuclideanDistance(Node<Vector2> a, Node<Vector2> b)
     {
         return Mathf.Sqrt(Mathf.Pow(a.GetCoordinate().x - b.GetCoordinate().x, 2) +
                           Mathf.Pow(Mathf.Abs(a.GetCoordinate().y - b.GetCoordinate().y), 2));
     }
 
-    public Vector2 GetMediatrix(NodeType a, NodeType b)
+    public Vector2 GetMediatrix(Node<Vector2> a, Node<Vector2> b)
     {
         //TODO: Make Mediatrix
         Vector2 perp = b.GetCoordinate() - a.GetCoordinate();
@@ -243,7 +250,7 @@ public class Vector2Graph<NodeType> : IGraph<NodeType, UnityEngine.Vector2>
         return default;
     }
 
-    public ICollection<NodeType> GetNodes()
+    public ICollection<Node<Vector2>> GetNodes()
     {
         return nodes;
     }

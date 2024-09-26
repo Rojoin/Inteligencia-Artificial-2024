@@ -9,6 +9,7 @@ using Random = UnityEngine.Random;
 public class VoronoiDiagram : MonoBehaviour
 {
     public bool drawPolis;
+    public bool create;
 
     [SerializeField] private List<Vector2> intersections = new List<Vector2>();
     [Space(15), SerializeField]
@@ -20,24 +21,23 @@ public class VoronoiDiagram : MonoBehaviour
         new Dictionary<ThiessenPolygon2D<SegmentVec2, Vector2>, Color>();
 
 
-    [SerializeField] private List<Vector2> pointsToCheck = new List<Vector2>();
+    [SerializeField] public List<Vector2> pointsToCheck = new List<Vector2>();
     private Dictionary<(Vector2, Vector2), float> weight = new();
 
     public List<ThiessenPolygon2D<SegmentVec2, Vector2>> GetPoly => polis;
     public GrapfView graph;
     public GameObject test;
+    public List<Vector2> pointsToRemove = new List<Vector2>();
 
-
-    public void AddNewItem(Transform item)
+    public void AddNewItem(Vector2 item)
     {
-        // transformPoints.Add(item);
+        pointsToCheck.Add(item);
         CreateSegments();
     }
 
-    public void RemoveItem(Transform item)
+    public void RemoveItem(Vector2 item)
     {
-        // transformPoints.Remove(item);
-        CreateSegments();
+        pointsToRemove.Add(item);
     }
 
     private IEnumerator Start()
@@ -60,6 +60,10 @@ public class VoronoiDiagram : MonoBehaviour
         {
             foreach (Vector2 otherPoint in pointsToCheck)
             {
+                if (point == otherPoint)
+                {
+                    continue;
+                }
                 weight.Add((point, otherPoint), 0.5f);
             }
         }
@@ -69,30 +73,17 @@ public class VoronoiDiagram : MonoBehaviour
 
     private void Update()
     {
-        if (test != null)
+        if (create)
         {
-            Vector2 testPos = new Vector2(test.transform.position.x, test.transform.position.y);
-            foreach (ThiessenPolygon2D<SegmentVec2, Vector2> VARIABLE in polis)
-            {
-                if (VARIABLE.IsInside(testPos))
-                {
-                    Debug.Log($"The Object is inside the poly: {VARIABLE.itemSector}");
-                }
-
-                VARIABLE.IsInside(testPos);
-            }
+            create = false;
+            CreateSegments();
         }
     }
 
     [ContextMenu("CreateSegment")]
-    private void CreateSegments()
+    public void CreateSegments()
     {
-        pointsToCheck.Clear();
-        foreach (var Node in graph.graph.mines)
-        {
-            pointsToCheck.Add(Node.GetCoordinate());
-        }
-
+  
         if (pointsToCheck == null)
             return;
         if (pointsToCheck.Count < 1)

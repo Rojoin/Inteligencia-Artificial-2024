@@ -6,6 +6,7 @@ using UnityEngine.Serialization;
 public class GrapfView : MonoBehaviour
 {
     [FormerlySerializedAs("grapf")] public Vector2Graph<Node<Vector2>> graph;
+    public VoronoiDiagram diagram;
     [SerializeField] private Sprite grass;
     [SerializeField] private Sprite rock;
     [SerializeField] private Sprite mine;
@@ -29,7 +30,7 @@ public class GrapfView : MonoBehaviour
 
     private void CreateGraph()
     {
-        graph = new Vector2Graph<Node<Vector2>>(nodesX, nodesY, offset,mines);
+        graph = new Vector2Graph<Node<Vector2>>(nodesX, nodesY, offset,mines,diagram);
         // AStarPathfinder<Node<Vector2>, Vector2> test = new AStarPathfinder<Node<Vector2>, Vector2>();
         // List<Node<Vector2>> findPath = test.FindPath(graph.nodes[0],graph.nodes[^1],graph,_caravanFazade);
         // if (findPath == null||findPath.Count < 0)
