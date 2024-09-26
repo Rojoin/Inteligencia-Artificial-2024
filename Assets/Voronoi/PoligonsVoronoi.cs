@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System;
 
 
-
 [System.Serializable]
 public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatable<Coord>
     where SegmentType : Segment<Coord>, new()
@@ -23,7 +22,7 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
 
     public void SortSegment()
     {
-         segments.Sort((p1, p2) => p1.Distance.CompareTo(p2.Distance));
+        segments.Sort((p1, p2) => p1.Distance.CompareTo(p2.Distance));
         //
     }
 
@@ -62,8 +61,8 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
                 segments[j].GetTwoPoints(out Coord p3, out Coord p4);
 
                 Coord intersection = segments[i].Intersection(p1, p2, p3, p4);
-                 if (IsInvalid(intersection)) continue;
-             
+                if (IsInvalid(intersection)) continue;
+
                 //Todo:Check for wrong point
                 if (intersections.Contains(intersection))
                     continue;
@@ -119,15 +118,19 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
             segments.Remove(segmentsUnused[i]);
         }
     }
+
     public bool hasSameSegment(PoligonsVoronoi<SegmentType, Coord> otherPoly)
     {
         for (int index = 0; index < intersections.Count; index++)
         {
-            for (int j = 0;  j < otherPoly.segments.Count; j++)
+            for (int j = 0; j < otherPoly.intersections.Count; j++)
             {
-                if (otherPoly.intersections[j].Equals(intersections[index]))
+                if (otherPoly.intersections.Count > 0)
                 {
-                    return true;
+                    if (otherPoly.intersections[j].Equals(intersections[index]))
+                    {
+                        return true;
+                    }
                 }
             }
         }
@@ -136,6 +139,7 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
     }
 
     protected abstract void SortPointsPolygon(bool value);
+
     protected virtual void SortPointsPolygon()
     {
         intersections.Clear();

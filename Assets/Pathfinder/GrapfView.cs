@@ -12,6 +12,9 @@ public class GrapfView : MonoBehaviour
     [SerializeField] private Sprite mine;
     [SerializeField] private Sprite water;
     [SerializeField] private Sprite humanCenter;
+
+    [SerializeField] private List<Transform> limits;
+
     private CaravanFazade _caravanFazade = new CaravanFazade();
     private List<GameObject> _tiles = new List<GameObject>();
     public GameObject tile;
@@ -30,13 +33,18 @@ public class GrapfView : MonoBehaviour
 
     private void CreateGraph()
     {
-        graph = new Vector2Graph<Node<Vector2>>(nodesX, nodesY, offset,mines,diagram);
+        graph = new Vector2Graph<Node<Vector2>>(nodesX, nodesY, offset, mines, diagram);
         // AStarPathfinder<Node<Vector2>, Vector2> test = new AStarPathfinder<Node<Vector2>, Vector2>();
         // List<Node<Vector2>> findPath = test.FindPath(graph.nodes[0],graph.nodes[^1],graph,_caravanFazade);
         // if (findPath == null||findPath.Count < 0)
         // {
         //     CreateGraph();
         // }
+        //Node scale * quatity + (sepation* cuantity -1)
+        limits[0].position = new Vector3(0, 1 + nodesY * offset, 0);
+        limits[1].position = new Vector3(1 + nodesX * offset, 1 + nodesY * offset, 0);
+        limits[2].position = new Vector3(1 + nodesX * offset, 0, 0);
+        limits[3].position = new Vector3(0, 0, 0);
     }
 
     private void DrawMap(Vector2IntGrapf<Node<Vector2Int>> vector2IntGrapf)
@@ -133,6 +141,5 @@ public class CaravanFazade : ITraveler
 
     public void SetGraph(GrapfView graph)
     {
-        
     }
 }

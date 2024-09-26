@@ -18,7 +18,7 @@ public class AligmentSystem : ECSSystem
     public override void Initialize()
     {
         parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 32 };
-        nearBoids = new Dictionary<uint, ConcurrentBag<uint>>();
+        nearBoids = new ConcurrentDictionary<uint, ConcurrentBag<uint>>();
     }
 
     protected override void PreExecute(float deltaTime)

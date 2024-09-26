@@ -9,6 +9,7 @@ namespace ECS.Example
     public class ECSFlocking : MonoBehaviour
     {
         public int entityCount = 5;
+        public int caravanCount = 2;
         public float velocity = 2f;
         public float radius = 1.0f;
 
@@ -24,6 +25,7 @@ namespace ECS.Example
         private const int MAX_OBJS_PER_DRAWCALL = 1000;
         private Mesh prefabMesh;
         private Material prefabMaterial;
+       public Material prefabMaterial2;
         private Vector3 prefabScale;
         public Agent agentPrefab;
         public Caravan Caravan;
@@ -81,12 +83,12 @@ namespace ECS.Example
                 ECSManager.AddComponent<SpeedComponent>(entityID, new SpeedComponent(velocity));
                 ECSManager.AddComponent<RadiusComponent>(entityID, new RadiusComponent(radius));
                 entities.Add(entityID, Instantiate(agentPrefab, Vector3.zero, Quaternion.identity));
-                SetBoidParams(entities[entityID].GetBoid());
                 ((ITraveler)entities[entityID]).SetGraph(GrapfView);
                 entities[entityID].SetActive(true);
+                SetBoidParams(entities[entityID].GetBoid());
                 // entities[entityID].gameObject.SetActive(true);
             }
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < caravanCount; i++)
             {
                 uint entityID = ECSManager.CreateEntity();
                 ECSManager.AddComponent<PositionComponent>(entityID, new PositionComponent(0, 0, 0));
@@ -99,10 +101,10 @@ namespace ECS.Example
                 ECSManager.AddComponent<SpeedComponent>(entityID, new SpeedComponent(velocity));
                 ECSManager.AddComponent<RadiusComponent>(entityID, new RadiusComponent(radius));
                 entities.Add(entityID, Instantiate(Caravan, Vector3.zero, Quaternion.identity));
-                SetBoidParams(entities[entityID].GetBoid());
                 ((ITraveler)entities[entityID]).SetGraph(GrapfView);
 
                 entities[entityID].SetActive(true);
+                SetBoidParams(entities[entityID].GetBoid());
             }
 
 
@@ -141,7 +143,7 @@ namespace ECS.Example
                 {
                     drawMatrix.SetTRS(entity.Value.GetBoid().position, quaternion.identity,
                         prefab.transform.localScale);
-                    Graphics.DrawMesh(prefabMesh, drawMatrix, prefabMaterial, 0, null, j);
+                    Graphics.DrawMesh(prefabMesh, drawMatrix,entity.Key<entityCount ?prefabMaterial: prefabMaterial2 , 0, null, j);
                 }
 
                 position.X = entity.Value.GetBoid().parent.position.x;
