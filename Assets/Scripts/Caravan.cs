@@ -221,8 +221,17 @@ public class Caravan : MonoBehaviour, ITraveler, IFlock,IAlarmable
         };
     }
 
+    public void SetGraph(GrapfView graph)
+    {
+        this.grafp = graph;
+    }
+
     public BoidAgent GetBoid() => boid;
-    
+    public void SetActive(bool value = true)
+    {
+        gameObject.SetActive(value);
+    }
+
     public void InvokeAlarmOn() => onAlarmRaised.Invoke();
 
     public void InvokeAlarmOff() => onAlarmStop.Invoke();

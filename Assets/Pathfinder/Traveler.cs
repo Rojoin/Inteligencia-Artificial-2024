@@ -57,4 +57,9 @@ public class Traveler : MonoBehaviour , ITraveler
 
         return 0;
     }
+
+    public void SetGraph(GrapfView graph)
+    {
+        
+    }
 }

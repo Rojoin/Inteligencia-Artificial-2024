@@ -15,7 +15,7 @@ namespace ECS.Example
         public float detectionRadious = 3.0f;
         public float aligmentWeight = 1;
         public float cohesionWeight = 1.5f;
-        public float separationWeight = 2;
+        public float separationWeight = -2;
 
 
         public GameObject prefab;
@@ -26,16 +26,17 @@ namespace ECS.Example
         private Material prefabMaterial;
         private Vector3 prefabScale;
         public Agent agentPrefab;
+        public Caravan Caravan;
 
-        private Dictionary<uint, Agent> entities;
+        private Dictionary<uint, IFlock> entities;
 
 
         [ContextMenu("RaiseAlarm")]
         public void RaiseAlarm()
         {
-            foreach (KeyValuePair<uint, Agent> entity in entities)
+            foreach (KeyValuePair<uint, IFlock> entity in entities)
             {
-                entity.Value.InvokeAlarmOn();
+               ((IAlarmable) entity.Value).InvokeAlarmOn();
             }
         }
 
@@ -45,10 +46,10 @@ namespace ECS.Example
             {
                 if (entities?.Count > 0)
                 {
-                    foreach (KeyValuePair<uint, Agent> entity in entities)
+                    foreach (KeyValuePair<uint, IFlock> entity in entities)
 
                     {
-                        SetBoidParams(entity.Value.boid);
+                        SetBoidParams(entity.Value.GetBoid());
                     }
                 }
             }
@@ -57,16 +58,16 @@ namespace ECS.Example
         [ContextMenu("StopAlarm")]
         public void StopAlarm()
         {
-            foreach (KeyValuePair<uint, Agent> entity in entities)
+            foreach (KeyValuePair<uint, IFlock> entity in entities)
             {
-                entity.Value.InvokeAlarmOff();
+                ((IAlarmable) entity.Value).InvokeAlarmOff();
             }
         }
 
         void Start()
         {
             ECSManager.Init();
-            entities = new Dictionary<uint, Agent>();
+            entities = new Dictionary<uint, IFlock>();
             for (int i = 0; i < entityCount; i++)
             {
                 uint entityID = ECSManager.CreateEntity();
@@ -80,10 +81,30 @@ namespace ECS.Example
                 ECSManager.AddComponent<SpeedComponent>(entityID, new SpeedComponent(velocity));
                 ECSManager.AddComponent<RadiusComponent>(entityID, new RadiusComponent(radius));
                 entities.Add(entityID, Instantiate(agentPrefab, Vector3.zero, Quaternion.identity));
-                SetBoidParams(entities[entityID].boid);
-                entities[entityID].grafp = GrapfView;
-                entities[entityID].gameObject.SetActive(true);
+                SetBoidParams(entities[entityID].GetBoid());
+                ((ITraveler)entities[entityID]).SetGraph(GrapfView);
+                entities[entityID].SetActive(true);
+                // entities[entityID].gameObject.SetActive(true);
             }
+            for (int i = 0; i < 2; i++)
+            {
+                uint entityID = ECSManager.CreateEntity();
+                ECSManager.AddComponent<PositionComponent>(entityID, new PositionComponent(0, 0, 0));
+                ECSManager.AddComponent<AlignmentComponent>(entityID, new AlignmentComponent(0, 0, 0));
+                ECSManager.AddComponent<CohesionComponent>(entityID, new CohesionComponent(0, 0, 0));
+                ECSManager.AddComponent<SeparationComponent>(entityID, new SeparationComponent(0, 0, 0));
+                ECSManager.AddComponent<DirectionComponent>(entityID, new DirectionComponent(0, 0, 0));
+                ECSManager.AddComponent<ObjectiveComponent>(entityID, new ObjectiveComponent(0, 0, 0));
+                ECSManager.AddComponent<FowardComponent>(entityID, new FowardComponent(0, 1, 0));
+                ECSManager.AddComponent<SpeedComponent>(entityID, new SpeedComponent(velocity));
+                ECSManager.AddComponent<RadiusComponent>(entityID, new RadiusComponent(radius));
+                entities.Add(entityID, Instantiate(Caravan, Vector3.zero, Quaternion.identity));
+                SetBoidParams(entities[entityID].GetBoid());
+                ((ITraveler)entities[entityID]).SetGraph(GrapfView);
+
+                entities[entityID].SetActive(true);
+            }
+
 
             prefabMesh = prefab.GetComponent<MeshFilter>().sharedMesh;
             prefabMaterial = prefab.GetComponent<MeshRenderer>().sharedMaterial;
@@ -97,7 +118,7 @@ namespace ECS.Example
 
         void LateUpdate()
         {
-            foreach (KeyValuePair<uint, Agent> entity in entities)
+            foreach (KeyValuePair<uint, IFlock> entity in entities)
             {
                 PositionComponent position = ECSManager.GetComponent<PositionComponent>(entity.Key);
                 AlignmentComponent alignment = ECSManager.GetComponent<AlignmentComponent>(entity.Key);
@@ -114,24 +135,24 @@ namespace ECS.Example
                 var dir = new Vector3(direction.X, direction.Y, direction.Z);
                 var Pos = new Vector3(position.X, position.Y, position.Z);
 
-                entity.Value.boid.SetACS(Alig, Cohe, Sep, dir);
+                entity.Value.GetBoid().SetACS(Alig, Cohe, Sep, dir);
                 Matrix4x4 drawMatrix = new Matrix4x4();
                 for (int j = 0; j < prefabMesh.subMeshCount; j++)
                 {
-                    drawMatrix.SetTRS(entity.Value.transform.position, quaternion.identity,
+                    drawMatrix.SetTRS(entity.Value.GetBoid().position, quaternion.identity,
                         prefab.transform.localScale);
                     Graphics.DrawMesh(prefabMesh, drawMatrix, prefabMaterial, 0, null, j);
                 }
 
-                position.X = entity.Value.transform.position.x;
-                position.Y = entity.Value.transform.position.y;
-                position.Z = entity.Value.transform.position.z;
-                objetive.X = entity.Value.boid.objective.x;
-                objetive.Y = entity.Value.boid.objective.y;
-                objetive.Z = entity.Value.boid.objective.z;
-                foware.X = entity.Value.transform.forward.x;
-                foware.Y = entity.Value.transform.forward.y;
-                foware.Z = entity.Value.transform.forward.z;
+                position.X = entity.Value.GetBoid().parent.position.x;
+                position.Y = entity.Value.GetBoid().parent.position.y;
+                position.Z = entity.Value.GetBoid().parent.position.z;
+                objetive.X = entity.Value.GetBoid().objective.x;
+                objetive.Y = entity.Value.GetBoid().objective.y;
+                objetive.Z = entity.Value.GetBoid().objective.z;
+                foware.X = entity.Value.GetBoid().parent.forward.x;
+                foware.Y = entity.Value.GetBoid().parent.forward.y;
+                foware.Z = entity.Value.GetBoid().parent.forward.z;
             }
         }
 

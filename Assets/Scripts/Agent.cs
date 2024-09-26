@@ -63,6 +63,7 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
         startNode = grafp.graph.nodes[0];
         humanCenterNode = startNode;
         boid.objective = grafp.graph.nodes[^1].GetCoordinate();
+        boid.parent = transform;
         PathFinderManager<Node<Vector2>, Vector2>.graph = grafp.graph;
         //path = Pathfinder.FindPath(startNode, destinationNode, grafp.graph, this);
         //Todo: Make a way to give the current place for the first time
@@ -270,9 +271,19 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
         };
     }
 
+    public void SetGraph(GrapfView graph)
+    {
+        this.grafp = graph;
+    }
+
     public BoidAgent GetBoid()
     {
         return boid;
+    }
+
+    public void SetActive(bool value = true)
+    {
+        gameObject.SetActive(value);
     }
 
     public void InvokeAlarmOn() => onAlarmRaised.Invoke();

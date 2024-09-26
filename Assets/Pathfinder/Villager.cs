@@ -62,4 +62,9 @@ public class Villager : MonoBehaviour, ITraveler
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
     }
+
+    public void SetGraph(GrapfView graph)
+    {
+        
+    }
 }
