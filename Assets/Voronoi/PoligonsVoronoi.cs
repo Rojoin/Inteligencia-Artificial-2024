@@ -119,16 +119,17 @@ public abstract class PoligonsVoronoi<SegmentType, Coord> where Coord : IEquatab
     }
     public bool hasSameSegment(PoligonsVoronoi<SegmentType, Coord> otherPoly)
     {
-        foreach (SegmentType segmentType in segments)
+        for (int index = 0; index < intersections.Count; index++)
         {
-            foreach (var seg in otherPoly.segments)
+            for (int j = 0; j < otherPoly.segments.Count; j++)
             {
-                if (seg.Equals(segmentType))
+                if (otherPoly.intersections[j].Equals(intersections[index]))
                 {
                     return true;
                 }
             }
         }
+
         return false;
     }
 

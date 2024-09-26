@@ -18,8 +18,8 @@ public class VoronoiDiagram : MonoBehaviour
     [SerializeField]
     private Dictionary<ThiessenPolygon2D<SegmentVec2, Vector2>, Color> polyColors =
         new Dictionary<ThiessenPolygon2D<SegmentVec2, Vector2>, Color>();
-    
-    
+
+
     [SerializeField] private List<Vector2> pointsToCheck = new List<Vector2>();
     private Dictionary<(Vector2, Vector2), float> weight = new();
 
@@ -162,44 +162,64 @@ public class VoronoiDiagram : MonoBehaviour
     private void CreateWeightedSegments()
     {
         weight.Clear();
-        foreach (Vector2 point in pointsToCheck)
-        {
-            foreach (Vector2 otherPoint in pointsToCheck)
-            {
-                weight.Add((point, otherPoint), 0.5f);
-            }
-        }
-
+        // for (int index = 0; index < pointsToCheck.Count; index++)
+        // {
+        //     Vector2 point = pointsToCheck[index];
+        //     for (int j = 0; j< pointsToCheck.Count; j++)
+        //     {
+        //         if (index == j)
+        //         {
+        //             continue;
+        //         }
+        //         Vector2 otherPoint = pointsToCheck[j];
+        //         weight.TryAdd((point, otherPoint), 0.5f);
+        //     }
+        // }
         for (int i = 0; i < polis.Count; i++)
         {
+            float totalNeighborWeight = 0f;
+
+            // First pass: Calculate total weight of neighbors for polygon 'i'
+            for (int j = 0; j < polis.Count; j++)
+            {
+                if (i == j || !polis[i].hasSameSegment(polis[j]))
+                {
+                    continue;
+                }
+
+                // Add the weight of the neighboring polygon 'j' to the total
+                totalNeighborWeight += polis[j].weight;
+            }
+
             for (int j = 0; j < polis.Count; j++)
             {
                 if (i == j)
                 {
                     continue;
                 }
-                
+
+                if (!polis[i].hasSameSegment(polis[j]))
+                {
+                    weight.TryAdd((pointsToCheck[i], pointsToCheck[j]), 0.5f);
+                    weight.TryAdd((pointsToCheck[j], pointsToCheck[i]), 0.5f);
+                    continue;
+                }
+
                 float weightA = polis[i].weight;
                 float weightB = polis[j].weight;
-                float totalWeight = weightA + weightB;
-                float percentaje = 0.5f;
-                if (weightA >= weightB)
-                {
-                    percentaje = weightB / totalWeight;
-                }
-                else if (weightA < weightB)
-                {
-                    percentaje = weightA / totalWeight;
-                }
 
+                // Calculate percentage of influence relative to total neighbor weight
+                float percentajePolyA = weightA / (weightA + totalNeighborWeight);
+                float percentajePolyB = weightB / (weightB + totalNeighborWeight);
 
-                if (weight.TryGetValue((pointsToCheck[i], pointsToCheck[j]), out var value))
-                {
-                    weight[(pointsToCheck[i], pointsToCheck[j])] = percentaje;
-                }
+                // Ensure the percentages sum up to 1
+                float totalPercentage = percentajePolyA + percentajePolyB;
+                percentajePolyA /= totalPercentage;
+                percentajePolyB /= totalPercentage;
 
-                weight[(pointsToCheck[i], pointsToCheck[j])] = percentaje;
-                weight[(pointsToCheck[j], pointsToCheck[i])] = percentaje;
+                // Assign the calculated percentages to the weight dictionary
+                weight.TryAdd((pointsToCheck[i], pointsToCheck[j]), percentajePolyA);
+                weight.TryAdd((pointsToCheck[j], pointsToCheck[i]), percentajePolyB);
             }
         }
     }
@@ -207,11 +227,12 @@ public class VoronoiDiagram : MonoBehaviour
     [ContextMenu("Create WeightedVornoid")]
     private void CreateWeightedVoronoid()
     {
+        if (polis == null || polis.Count < 1)
+            //       CreateSegments();
+
+            if (polis == null || polis.Count < 1)
+                return;
         CreateWeightedSegments();
-        if (polis == null)
-            return;
-        if (polis.Count < 1)
-            return;
 
         SegmentVec2.amountSegments = 0;
         polis.Clear();
@@ -221,7 +242,7 @@ public class VoronoiDiagram : MonoBehaviour
         for (int i = 0; i < pointsToCheck.Count; i++)
         {
             ThiessenPolygon2D<SegmentVec2, Vector2> poli =
-                new ThiessenPolygon2D<SegmentVec2, Vector2>(pointsToCheck[i], intersections);
+                new ThiessenPolygon2D<SegmentVec2, Vector2>(pointsToCheck[i], intersections, 0.5f);
             polis.Add(poli);
             poli.colorGizmos.r = Random.Range(0, 1.0f);
             poli.colorGizmos.g = Random.Range(0, 1.0f);
@@ -234,20 +255,19 @@ public class VoronoiDiagram : MonoBehaviour
             polis[i].AddSegmentsWithLimits(segmentLimit);
         }
 
-
         for (int i = 0; i < pointsToCheck.Count; i++)
         {
             for (int j = 0; j < pointsToCheck.Count; j++)
             {
                 if (i == j)
                     continue;
-                float relationOfMediatrix = weight[(pointsToCheck[i], pointsToCheck[j])];
+
+                float percentage = weight[(pointsToCheck[i], pointsToCheck[j])];
                 SegmentVec2 segment =
-                    new SegmentVec2(pointsToCheck[i], pointsToCheck[j], relationOfMediatrix);
+                    new SegmentVec2(pointsToCheck[i], pointsToCheck[j], percentage);
                 polis[i].AddSegment(segment);
             }
         }
-
 
         for (int i = 0; i < polis.Count; i++)
         {

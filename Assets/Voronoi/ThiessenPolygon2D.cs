@@ -97,7 +97,7 @@ public class ThiessenPolygon2D<SegmentType, Coord> : PoligonsVoronoi<SegmentVec2
          Vector2 centroid = new Vector2(intersections.Average(p => p.x), intersections.Average(p => p.y));
          intersections = intersections.OrderBy(p => Mathf.Atan2(p.y - centroid.y, p.x - centroid.x)).ToList();
 
-         return;
+return;
 
         indexIntersections.Clear();
 

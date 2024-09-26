@@ -42,7 +42,10 @@ public class SegmentVec2 : Segment<Vector2>
         distance =  Mathf.Sqrt(Mathf.Pow(Mathf.Abs(origin.x - final.x), 2) +
                                Mathf.Pow(Mathf.Abs(origin.y - final.y), 2));
 
-        mediatrix = (origin + final) * persentageOfDistance;
+        float a = 1;
+        
+        //mediatrix = origin * (a - persentageOfDistance)+ final * persentageOfDistance;
+       mediatrix = Vector2.Lerp(origin, final, persentageOfDistance);
 
         direction = (final - origin).normalized;
         Vector2 perpendicular = new Vector2(-direction.y, direction.x);
