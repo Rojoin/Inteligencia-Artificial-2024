@@ -40,6 +40,8 @@ public class ThiessenPolygon2D<SegmentType, Coord> : PoligonsVoronoi<SegmentVec2
 
     public override void DrawPoly()
     {
+#if UNITY_EDITOR
+
         Vector3[] points = new Vector3[intersections.Count + 1];
 
         for (int i = 0; i < intersections.Count; i++)
@@ -53,6 +55,8 @@ public class ThiessenPolygon2D<SegmentType, Coord> : PoligonsVoronoi<SegmentVec2
 
         Handles.color = Color.black;
         Handles.DrawPolyLine(points);
+
+#endif
     }
 
     public override bool IsInside(Vector2 point)
