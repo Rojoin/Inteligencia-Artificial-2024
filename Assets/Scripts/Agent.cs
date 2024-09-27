@@ -9,7 +9,7 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
 {
     private FSM<MinerStates, MinerFlags> fsm;
 
-    [SerializeField] private float chaseDistance = 0.2f;
+    [SerializeField] private float chaseDistance = 0.5f;
 
     private int gold = 0;
     private int energy = 3;
@@ -62,6 +62,7 @@ public class Agent : MonoBehaviour, ITraveler ,IFlock,IAlarmable
         yield return null;
         startNode = grafp.graph.nodes[0];
         humanCenterNode = startNode;
+        transform.position = humanCenterNode.GetCoordinate();
         boid.objective = grafp.graph.nodes[^1].GetCoordinate();
         boid.parent = transform;
         PathFinderManager<Node<Vector2>, Vector2>.graph = grafp.graph;

@@ -18,10 +18,9 @@ public class ThiessenPolygon2D<SegmentType, Coord> : PoligonsVoronoi<SegmentVec2
 
     protected override bool IsInvalid(Vector2 intersection)
     {
-        if (intersection.Equals(INVALID_VALUE) || intersection.Equals(Vector2.positiveInfinity) ||
-            intersection.Equals(Vector2.negativeInfinity) || float.IsNaN(intersection.x) || float.IsNaN(intersection.y))
-            return true;
-        return false;
+        return (intersection.Equals(INVALID_VALUE) || intersection.Equals(Vector2.positiveInfinity) ||
+                intersection.Equals(Vector2.negativeInfinity) || float.IsNaN(intersection.x) ||
+                float.IsNaN(intersection.y));
     }
 
     public override void AddSegmentsWithLimits(List<SegmentLimit> limits)
@@ -68,7 +67,7 @@ public class ThiessenPolygon2D<SegmentType, Coord> : PoligonsVoronoi<SegmentVec2
             return false;
         }
 
-        Vector2 extreme = new Vector2(100, point.y);
+        Vector2 extreme = new Vector2(1000000000000, point.y);
 
         int count = 0;
         for (int i = 0; i < length; i++)

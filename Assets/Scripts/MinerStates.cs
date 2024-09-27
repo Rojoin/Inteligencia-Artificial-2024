@@ -39,7 +39,7 @@ namespace Miner
             Action<Node<Vector2>> setCurrentMine = parameters[6] as Action<Node<Vector2>>;
             isAlarmOn = Convert.ToBoolean(parameters[7]);
             var goldToRetrieve = parameters[8] as Action<int>;
-            Vector3 currentPos = (Vector3) parameters[9];
+            Vector3 currentPos = (Vector3)parameters[9];
             BehaviourActions behaviour = new BehaviourActions();
             behaviour.SetTransitionBehavior(() =>
             {
@@ -60,12 +60,15 @@ namespace Miner
                 {
                     if (!isAlarmOn)
                     {
-                        path = humanCenter.GetNewDestination(traveler,currentPos);
-                        setDestination(path[0].GetCoordinate());
-                        modifyPath.Invoke(path);
-                        setCurrentMine.Invoke(path[^1]);
-                        goldToRetrieve.Invoke(0);
-                        OnFlag.Invoke(MinerFlags.OnGoingToMine);
+                        path = humanCenter.GetNewDestination(traveler, currentPos);
+                        if (path != null)
+                        {
+                            setDestination(path[0].GetCoordinate());
+                            modifyPath.Invoke(path);
+                            setCurrentMine.Invoke(path[^1]);
+                            goldToRetrieve.Invoke(0);
+                            OnFlag.Invoke(MinerFlags.OnGoingToMine);
+                        }
                     }
                 }
             });
@@ -243,7 +246,8 @@ namespace Miner
                 }
             });
             return behaviour;
-        }  
+        }
+
         Action<bool> changeAlarmState;
 
         public override BehaviourActions GetEnterBehaviours(params object[] parameters)
@@ -254,8 +258,9 @@ namespace Miner
             }
             else
             {
-                throw new ArgumentNullException(nameof(parameters),"First param must be a place");
+                throw new ArgumentNullException(nameof(parameters), "First param must be a place");
             }
+
             place = (parameters[0] as Node<Vector2>).GetPlace();
             var onAlarmStop = parameters[1] as Action<Action, bool>;
             var onAlarmResume = parameters[2] as Action<Action, bool>;
@@ -264,6 +269,7 @@ namespace Miner
             onAlarmResume.Invoke(OnAlarmRaise, true);
             return default;
         }
+
         private void OnAlarmStoped()
         {
             isAlarmOn = false;
@@ -275,6 +281,7 @@ namespace Miner
             isAlarmOn = true;
             changeAlarmState.Invoke(isAlarmOn);
         }
+
         public override BehaviourActions GetExitBehaviours(params object[] parameters)
         {
             var onAlarmStop = parameters[0] as Action<Action, bool>;
@@ -326,7 +333,7 @@ namespace Miner
                         OnFlag.Invoke(MinerFlags.OnStartMining);
                     }
 
-                    if (path[^1].GetPlace() is HumanCenterBase)
+                    if (path[^1].GetPlace() is HumanCenter2D)
                     {
                         OnFlag.Invoke(MinerFlags.OnWaitingOnCenter);
                     }

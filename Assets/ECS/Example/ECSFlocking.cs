@@ -25,7 +25,7 @@ namespace ECS.Example
         private const int MAX_OBJS_PER_DRAWCALL = 1000;
         private Mesh prefabMesh;
         private Material prefabMaterial;
-       public Material prefabMaterial2;
+        private Material prefabMaterial2;
         private Vector3 prefabScale;
         public Agent agentPrefab;
         public Caravan Caravan;

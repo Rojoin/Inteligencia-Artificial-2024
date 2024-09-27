@@ -61,7 +61,7 @@ public abstract class HumanCenter<NodeType, Coordinate> : HumanCenterBase, IPlac
             }
         }
 
-        return PathFinderManager<NodeType, Coordinate>.GetPath(currentNode, currentNode, traveler);
+        return PathFinderManager<NodeType, Coordinate>.GetPath(currentNode, currentNode , traveler);
     }
 
     public List<NodeType> GetNewDestination(ITraveler traveler, NodeType currentPosition, Vector2 position)
@@ -74,12 +74,12 @@ public abstract class HumanCenter<NodeType, Coordinate> : HumanCenterBase, IPlac
                 var a = goldMines.Where(p => p.GetCoordinate().Equals(poli.itemSector));
                 if (a.ToArray().Length > 0)
                 {
-                    return PathFinderManager<NodeType, Coordinate>.GetPath(currentPosition, a.ToArray()[0], traveler);
+                    return PathFinderManager<NodeType, Coordinate>.GetPath(currentPosition, a.ToArray()[0],graph, traveler);
                 }
             }
         }
 
-        return PathFinderManager<NodeType, Coordinate>.GetPath(currentNode, currentPosition, traveler);
+        return PathFinderManager<NodeType, Coordinate>.GetPath(currentNode, currentPosition,graph, traveler);
     }
 }
 
