@@ -13,6 +13,5 @@ public class Obstacle : MonoBehaviour
 
             Destroy(this.gameObject);
         }
-
     }
 }

@@ -126,7 +126,7 @@ public class StartConfigurationScreen : MonoBehaviour
 
     void OnBiasChange(float value)
     {
-        PopulationManager.Instance.Bias = -value;
+        PopulationManager.Instance.Bias = value;
 
         biasTxt.text = string.Format(biasText, PopulationManager.Instance.Bias.ToString("0.00"));
     }

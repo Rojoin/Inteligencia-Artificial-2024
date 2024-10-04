@@ -7,9 +7,11 @@ public class ObstacleManager : MonoBehaviour
     const float HEIGHT_RANDOM = 3f;
     const int MIN_COUNT = 3;
     public GameObject prefab;
+    public GameObject coinPrefab;
     Vector3 pos = new Vector3(DISTANCE_BETWEEN_OBSTACLES, 0, 0);
 
     List<Obstacle> obstacles = new List<Obstacle>();
+    List<Obstacle> coins = new List<Obstacle>();
 
     private static ObstacleManager instance = null;
 
@@ -40,6 +42,20 @@ public class ObstacleManager : MonoBehaviour
 
         InstantiateObstacle();
         InstantiateObstacle();
+        InstatiateCoin();
+        InstatiateCoin();
+    }
+
+    private void InstatiateCoin()
+    {
+        
+        pos.x += DISTANCE_BETWEEN_OBSTACLES/2;
+        pos.y = Random.Range(-HEIGHT_RANDOM, HEIGHT_RANDOM);
+        GameObject go = GameObject.Instantiate(coinPrefab, pos, Quaternion.identity);
+        go.transform.SetParent(this.transform, false);
+        Obstacle obstacle = go.GetComponent<Coin>();
+        obstacle.OnDestroy += OnCoinDestroy;
+        coins.Add(obstacle);;
     }
 
     public Obstacle GetNextObstacle(Vector3 pos)
@@ -53,13 +69,26 @@ public class ObstacleManager : MonoBehaviour
         return null;
     }
 
-    public bool IsColliding(Vector3 pos)
+    public bool IsCollidingObstacle(Vector3 pos)
     {
         Collider2D collider = Physics2D.OverlapBox(pos, new Vector2(0.3f, 0.3f), 0);
 
-        if (collider != null)
+        if (collider != null && collider.tag == "Obstacle")
             return true;
 
+        return false;
+    } 
+    public bool IsCollidingCoin(Vector3 pos, out Obstacle obstacle)
+    {
+        Collider2D collider = Physics2D.OverlapBox(pos, new Vector2(0.3f, 0.3f), 0);
+
+        if (collider != null && collider.tag == "Coin")
+        {
+            obstacle = collider.GetComponent<Obstacle>(); 
+            return true;
+        }
+
+        obstacle = null;
         return false;
     }
 
@@ -70,8 +99,15 @@ public class ObstacleManager : MonoBehaviour
             obstacles[i].CheckToDestroy();
         }
 
+        for (int i = 0; i < coins.Count; i++)
+        {
+            coins[i].CheckToDestroy();
+        }
+
         while (obstacles.Count < MIN_COUNT)
             InstantiateObstacle();
+        while (coins.Count < MIN_COUNT)
+            InstatiateCoin();
     }
 
     void InstantiateObstacle()
@@ -89,5 +125,22 @@ public class ObstacleManager : MonoBehaviour
     {
         obstacle.OnDestroy -= OnObstacleDestroy;
         obstacles.Remove(obstacle);
+    }
+    
+    void OnCoinDestroy(Obstacle obstacle)
+    {
+        obstacle.OnDestroy -= OnCoinDestroy;
+        coins.Remove(obstacle);
+    }
+
+    public Obstacle GetNextCoin(Vector3 transformPosition)
+    {
+        for (int i = 0; i < coins.Count; i++)
+        {
+            if (transformPosition.x < coins[i].transform.position.x + 2f)
+                return coins[i];
+        }
+
+        return null;
     }
 }
