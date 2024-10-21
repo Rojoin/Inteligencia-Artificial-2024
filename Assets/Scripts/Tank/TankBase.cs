@@ -5,13 +5,25 @@ public class TankBase : MonoBehaviour
 {
     public float Speed = 10.0f;
     public float RotSpeed = 20.0f;
+    public float FitnessReward = 20.0f;
+
+    public float FitnessMultiplyer
+    {
+        get => fitnessMultiplyer;
+        set
+        {
+            fitnessMultiplyer = value;
+            fitnessMultiplyer = Mathf.Clamp(fitnessMultiplyer, 0.0f, 2.0f);
+        }
+    }
 
     protected Genome genome;
-	protected NeuralNetwork brain;
+    protected NeuralNetwork brain;
     protected IMinable nearMine;
     protected IMinable goodMine;
     protected IMinable badMine;
     protected float[] inputs;
+    private float fitnessMultiplyer = 1.0f;
 
     public void SetBrain(Genome genome, NeuralNetwork brain)
     {
@@ -45,7 +57,7 @@ public class TankBase : MonoBehaviour
     {
         return (mine.GetPosition() - this.transform.position).normalized;
     }
-    
+
     protected bool IsCloseToMine(IMinable mine)
     {
         return (this.transform.position - nearMine.GetPosition()).sqrMagnitude <= 2.0f;
@@ -54,26 +66,34 @@ public class TankBase : MonoBehaviour
     protected void SetForces(float leftForce, float rightForce, float dt)
     {
         Vector3 pos = this.transform.position;
-        float rotFactor = Mathf.Clamp((rightForce - leftForce), -1.0f, 1.0f);
+        var force = rightForce - leftForce;
+        float rotFactor = Mathf.Clamp(force, -1.0f, 1.0f);
         this.transform.rotation *= Quaternion.AngleAxis(rotFactor * RotSpeed * dt, Vector3.up);
         pos += this.transform.forward * Mathf.Abs(rightForce + leftForce) * 0.5f * Speed * dt;
         this.transform.position = pos;
+        if (!Mathf.Approximately(Neuron.SigmoidS(force, 1), 0))
+        {
+            FitnessMultiplyer -= 0.05f;
+        }
+        else
+        {
+            FitnessMultiplyer += 0.5f;
+        }
     }
 
-	public void Think(float dt) 
-	{
+    public void Think(float dt)
+    {
         OnThink(dt);
 
-        if(IsCloseToMine(nearMine))
+        if (IsCloseToMine(nearMine))
         {
             OnTakeMine(nearMine);
             PopulationManager.Instance.RelocateMine(nearMine);
         }
-	}
+    }
 
     protected virtual void OnThink(float dt)
     {
-
     }
 
     protected virtual void OnTakeMine(IMinable mine)
@@ -82,7 +102,6 @@ public class TankBase : MonoBehaviour
 
     protected virtual void OnReset()
     {
-
     }
 }
 

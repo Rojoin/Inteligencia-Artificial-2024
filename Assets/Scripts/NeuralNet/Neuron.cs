@@ -58,4 +58,10 @@ public class Neuron
 	{
 		return 1.0f / (1.0f + Mathf.Exp(-a / p));
 	}
+	public static float SigmoidS(float a,float p)
+	{
+		return 1.0f / (1.0f + Mathf.Exp(-a / p));
+	}
 }
+
+

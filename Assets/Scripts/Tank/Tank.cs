@@ -27,12 +27,14 @@ public class Tank : TankBase
     {
         if (mine.IsGoodMine())
         {
-            fitness *= 2;
+            fitness *= FitnessReward * FitnessMultiplyer;
             genome.fitness = fitness;
+            FitnessMultiplyer = 1.0f;
         }
         else
         {
-            fitness /= 2;
+            fitness *= 0.1f;
+            FitnessMultiplyer = 0.0f;
             genome.fitness = fitness;
         }
         
